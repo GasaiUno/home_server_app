@@ -1,7 +1,11 @@
 export type ServiceItem = {
+  id: string;
   name: string;
   url: string;
   description: string;
+  icon: string;
+  accent: string;
+  category: string;
 };
 
 export type StatusResponse = {
@@ -20,3 +24,5 @@ export type Notice = {
   type: "success" | "error";
   message: string;
 };
+
+export type ServiceTarget = "_self" | "_blank";

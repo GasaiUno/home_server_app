@@ -2,9 +2,13 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class ServiceItem(BaseModel):
+    id: str
     name: str
     url: str
     description: str
+    icon: str
+    accent: str
+    category: str
 
 
 class ServicesResponse(BaseModel):

@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -33,7 +31,7 @@ def test_status_returns_backend_metadata_with_token(client):
     assert response.status_code == 200
     assert payload["status"] == "ok"
     assert payload["app"] == "Home Server App"
-    assert payload["version"] == "0.1.0"
+    assert payload["version"] == "0.1.1"
     assert isinstance(payload["uptime_seconds"], int)
     assert payload["server_time"]
 
@@ -43,12 +41,24 @@ def test_services_requires_token_and_returns_configured_services(client):
     payload = response.json()
 
     assert response.status_code == 200
-    assert {service["name"] for service in payload["services"]} >= {
-        "Jellyfin",
-        "Navidrome",
-        "qBittorrent",
-    }
+    assert {service["id"] for service in payload["services"]} >= {"jellyfin", "navidrome", "qbittorrent"}
     assert all(service["url"].startswith("http://10.8.1.5:") for service in payload["services"])
+    assert all({"name", "url", "description"} <= set(service) for service in payload["services"])
+
+
+def test_services_include_home_mode_metadata_without_breaking_existing_fields(client):
+    response = client.get("/api/services", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    jellyfin = next(service for service in payload["services"] if service["id"] == "jellyfin")
+
+    assert response.status_code == 200
+    assert jellyfin["name"] == "Фильмы"
+    assert jellyfin["description"] == "Jellyfin — фильмы и сериалы"
+    assert jellyfin["url"] == "http://10.8.1.5:8096"
+    assert jellyfin["icon"] == "film"
+    assert jellyfin["accent"] == "purple"
+    assert jellyfin["category"] == "media"
 
 
 def test_youtube_rejects_non_http_url(client):
