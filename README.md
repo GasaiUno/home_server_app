@@ -1,6 +1,14 @@
-# Home Server App v0.1.2
+# Home Server App v0.2.0
 
 Лёгкая PWA-панель для домашнего сервера за VPN. Frontend открывается на `8091`, backend API на `8090`.
+
+## Что нового в v0.2
+
+- Управление qBittorrent: список торрентов, progress, скорости, ETA, pause/resume/delete, magnet и `.torrent` upload.
+- YouTube downloads: выбор video/audio, качества и формата, список последних файлов из `YOUTUBE_PATH`.
+- Файловый браузер по разрешённым папкам `media/music/torrents/youtube/books`.
+- Home dashboard: summary, активные торренты, последние загрузки, mini disk usage.
+- Admin tabs: Overview, Monitoring, Downloads, Files, Services, Events, Settings.
 
 ## Режимы интерфейса
 
@@ -52,6 +60,11 @@ cp .env.example .env
 - `ALERT_CPU_PERCENT`, `ALERT_MEMORY_PERCENT`, `ALERT_SWAP_PERCENT`, `ALERT_DISK_PERCENT`, `ALERT_TEMPERATURE_C` - thresholds.
 - `ALERT_CHECK_INTERVAL_SECONDS` - период фоновой проверки.
 - `ALERT_COOLDOWN_SECONDS` - cooldown одинаковых событий.
+- `QB_URL`, `QB_USERNAME`, `QB_PASSWORD`, `QB_BYPASS_AUTH` - доступ к qBittorrent API.
+- `METUBE_URL` - URL MeTube API.
+- `MEDIA_PATH`, `MUSIC_PATH`, `TORRENTS_PATH`, `YOUTUBE_PATH`, `BOOKS_PATH` - разрешённые папки внутри backend-контейнера.
+- `ALLOW_FILE_DELETE` - включает удаление файлов через Admin Files.
+- `MAX_UPLOAD_SIZE_MB` - лимит upload через web UI.
 
 Секреты не хранятся в коде. `.env` добавлен в `.gitignore`.
 
@@ -91,6 +104,11 @@ Backend в Docker получает read-only mounts для host metrics:
 - `/sys:/host/sys:ro`
 - `/var/run/docker.sock:/var/run/docker.sock:ro`
 - `./backend/app_data:/app/app_data`
+- `/home/igor/server/media:/data/media`
+- `/home/igor/server/music:/data/music`
+- `/home/igor/server/torrents:/data/torrents`
+- `/home/igor/server/youtube:/data/youtube`
+- `/home/igor/server/books:/data/books`
 
 Предупреждение: доступ к `docker.sock` даёт backend большие права на Docker host. Держите приложение доступным только через VPN и защищайте сильным `HOME_APP_TOKEN`.
 
@@ -111,11 +129,83 @@ Backend в Docker получает read-only mounts для host metrics:
 - `GET /api/admin/services-health` - требует `X-Home-Token`.
 - `GET /api/admin/events` - требует `X-Home-Token`.
 - `POST /api/admin/alerts/test` - требует `X-Home-Token`.
+- `GET /api/dashboard/summary` - требует `X-Home-Token`.
+- `GET /api/torrents` - требует `X-Home-Token`.
+- `POST /api/torrents/add-magnet` - требует `X-Home-Token`.
+- `POST /api/torrents/upload` - multipart `.torrent`, требует `X-Home-Token`.
+- `POST /api/torrents/{hash}/pause` - требует `X-Home-Token`.
+- `POST /api/torrents/{hash}/resume` - требует `X-Home-Token`.
+- `DELETE /api/torrents/{hash}` - требует `X-Home-Token`.
+- `GET /api/youtube/downloads` - требует `X-Home-Token`.
+- `GET /api/files?path=media` - требует `X-Home-Token`.
+- `GET /api/files/download?path=media/file.mkv` - требует `X-Home-Token`.
+- `POST /api/files/upload` - multipart upload, требует `X-Home-Token`.
+- `POST /api/files/mkdir` - требует `X-Home-Token`.
+- `DELETE /api/files` - требует `X-Home-Token`, работает только при `ALLOW_FILE_DELETE=true`.
 
 Пример:
 
 ```bash
 curl -H "X-Home-Token: change-me" http://localhost:8090/api/status
+```
+
+Проверка v0.2 endpoints:
+
+```bash
+curl -H "X-Home-Token: change-me" http://localhost:8090/api/dashboard/summary
+curl -H "X-Home-Token: change-me" http://localhost:8090/api/torrents
+curl -H "X-Home-Token: change-me" http://localhost:8090/api/youtube/downloads
+curl -H "X-Home-Token: change-me" "http://localhost:8090/api/files?path=media"
+```
+
+## qBittorrent
+
+По умолчанию `QB_BYPASS_AUTH=true`, backend обращается к `QB_URL=http://qbittorrent:8080` без login. Это удобно, если qBittorrent разрешает bypass/whitelist для Docker-сети `server_default`.
+
+Если bypass отключён:
+
+```env
+QB_BYPASS_AUTH=false
+QB_USERNAME=admin
+QB_PASSWORD=your-password
+```
+
+Backend выполнит `POST /api/v2/auth/login` и будет использовать cookie `SID`.
+
+## Файловый браузер
+
+Для приложения используются только разрешённые корни:
+
+- `media`
+- `music`
+- `torrents`
+- `youtube`
+- `books`, если папка существует
+
+Рекомендуемый Docker mapping:
+
+```yaml
+- /home/igor/server/media:/data/media
+- /home/igor/server/music:/data/music
+- /home/igor/server/torrents:/data/torrents
+- /home/igor/server/youtube:/data/youtube
+- /home/igor/server/books:/data/books
+```
+
+Удаление файлов выключено по умолчанию:
+
+```env
+ALLOW_FILE_DELETE=false
+```
+
+Включайте только если приложение доступно строго через VPN и защищено сильным token.
+
+## Обновление на сервере
+
+```bash
+git pull
+cp .env.example .env # только если env ещё не создан
+docker compose up -d --build
 ```
 
 ## Monitoring и Telegram alerts

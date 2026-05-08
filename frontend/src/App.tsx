@@ -111,7 +111,7 @@ export function App() {
         <Routes>
           <Route
             path="/"
-            element={<HomePage services={services} status={status} loading={loading} serviceTarget={serviceTarget} />}
+            element={<HomePage token={token} services={services} status={status} loading={loading} serviceTarget={serviceTarget} />}
           />
           <Route path="/actions" element={<ActionsPage token={token} onNotice={setNotice} />} />
           <Route

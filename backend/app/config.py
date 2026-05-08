@@ -8,7 +8,7 @@ from .models import ServiceItem
 
 
 APP_NAME = "Home Server App"
-APP_VERSION = "0.1.2"
+APP_VERSION = getenv("APP_VERSION", "0.2.0")
 
 
 DEFAULT_SERVICES = [
@@ -107,6 +107,19 @@ class Settings(BaseModel):
     alert_cooldown_seconds: int
     alert_service_failures: int
     events_path: Path
+    qb_url: str
+    qb_username: str | None
+    qb_password: str | None
+    qb_bypass_auth: bool
+    metube_url: str
+    home_data_root: str
+    media_path: str
+    music_path: str
+    torrents_path: str
+    youtube_path: str
+    books_path: str
+    allow_file_delete: bool
+    max_upload_size_mb: int
 
     @property
     def telegram_configured(self) -> bool:
@@ -173,4 +186,17 @@ def get_settings() -> Settings:
         alert_cooldown_seconds=_get_int("ALERT_COOLDOWN_SECONDS", 1800),
         alert_service_failures=_get_int("ALERT_SERVICE_FAILURES", 2),
         events_path=Path(getenv("EVENTS_PATH", "app_data/events.json")),
+        qb_url=getenv("QB_URL", "http://qbittorrent:8080"),
+        qb_username=_get_optional("QB_USERNAME"),
+        qb_password=_get_optional("QB_PASSWORD"),
+        qb_bypass_auth=_get_bool("QB_BYPASS_AUTH", True),
+        metube_url=getenv("METUBE_URL", "http://metube:8081"),
+        home_data_root=getenv("HOME_DATA_ROOT", "/data"),
+        media_path=getenv("MEDIA_PATH", "/data/media"),
+        music_path=getenv("MUSIC_PATH", "/data/music"),
+        torrents_path=getenv("TORRENTS_PATH", "/data/torrents"),
+        youtube_path=getenv("YOUTUBE_PATH", "/data/youtube"),
+        books_path=getenv("BOOKS_PATH", "/data/books"),
+        allow_file_delete=_get_bool("ALLOW_FILE_DELETE", False),
+        max_upload_size_mb=_get_int("MAX_UPLOAD_SIZE_MB", 2048),
     )

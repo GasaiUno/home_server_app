@@ -2,32 +2,42 @@ import { Activity, Clock3, ExternalLink, Gauge, RefreshCw, Server } from "lucide
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import {
+  deleteTorrent,
+  getFiles,
   getAdminDocker,
   getAdminEvents,
   getAdminMetrics,
   getAdminServicesHealth,
+  getTorrents,
+  pauseTorrent,
+  resumeTorrent,
   sendTestTelegramAlert
 } from "../api";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DockerContainersTable } from "../components/DockerContainersTable";
 import { EventsTimeline } from "../components/EventsTimeline";
+import { FileBrowser } from "../components/FileBrowser";
 import { MetricsGrid } from "../components/MetricsGrid";
 import { PageHeader } from "../components/PageHeader";
 import { ServicesHealthTable } from "../components/ServicesHealthTable";
 import { TelegramAlertsStatus } from "../components/TelegramAlertsStatus";
 import { TestTelegramAlertButton } from "../components/TestTelegramAlertButton";
+import { TorrentTable } from "../components/TorrentTable";
 import type {
   DockerContainer,
   EventItem,
   Notice,
   ServerMetrics,
+  FilesListResponse,
   ServiceHealthItem,
   ServiceItem,
   StatusResponse,
-  TelegramStatus
+  TelegramStatus,
+  TorrentItem
 } from "../types";
 import { formatServerTime, formatUptime, getErrorMessage } from "../utils";
 
-type AdminTab = "overview" | "monitoring" | "downloads" | "automation" | "settings";
+type AdminTab = "overview" | "monitoring" | "downloads" | "files" | "services" | "events" | "settings";
 
 type AdminPageProps = {
   token: string;
@@ -42,7 +52,9 @@ const tabs: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "monitoring", label: "Monitoring" },
   { id: "downloads", label: "Downloads" },
-  { id: "automation", label: "Automation" },
+  { id: "files", label: "Files" },
+  { id: "services", label: "Services" },
+  { id: "events", label: "Events" },
   { id: "settings", label: "Settings" }
 ];
 
@@ -55,6 +67,12 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
   const [telegram, setTelegram] = useState<TelegramStatus | null>(null);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [testAlertLoading, setTestAlertLoading] = useState(false);
+  const [torrents, setTorrents] = useState<TorrentItem[]>([]);
+  const [torrentLoading, setTorrentLoading] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<TorrentItem | null>(null);
+  const [files, setFiles] = useState<FilesListResponse | null>(null);
+  const [filePath, setFilePath] = useState("media");
+  const [filesLoading, setFilesLoading] = useState(false);
 
   const loadMonitoring = useCallback(async () => {
     setMonitoringLoading(true);
@@ -88,6 +106,46 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     return () => window.clearInterval(id);
   }, [activeTab, loadMonitoring]);
 
+  useEffect(() => {
+    if (activeTab === "services" || activeTab === "events") {
+      void loadMonitoring();
+    }
+  }, [activeTab, loadMonitoring]);
+
+  const loadTorrents = useCallback(async () => {
+    setTorrentLoading(true);
+    try {
+      const payload = await getTorrents(token);
+      setTorrents(payload.items);
+    } catch (error) {
+      onNotice({ type: "error", message: `Не удалось загрузить торренты: ${getErrorMessage(error)}` });
+    } finally {
+      setTorrentLoading(false);
+    }
+  }, [onNotice, token]);
+
+  useEffect(() => {
+    if (activeTab !== "downloads") return;
+    void loadTorrents();
+    const id = window.setInterval(() => void loadTorrents(), 8000);
+    return () => window.clearInterval(id);
+  }, [activeTab, loadTorrents]);
+
+  const loadFiles = useCallback(async () => {
+    setFilesLoading(true);
+    try {
+      setFiles(await getFiles(token, filePath));
+    } catch (error) {
+      onNotice({ type: "error", message: `Не удалось открыть файлы: ${getErrorMessage(error)}` });
+    } finally {
+      setFilesLoading(false);
+    }
+  }, [filePath, onNotice, token]);
+
+  useEffect(() => {
+    if (activeTab === "files") void loadFiles();
+  }, [activeTab, loadFiles]);
+
   async function handleTestAlert() {
     setTestAlertLoading(true);
     try {
@@ -105,6 +163,35 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     }
   }
 
+  async function runTorrentAction(action: "pause" | "resume", hash: string) {
+    setTorrentLoading(true);
+    try {
+      if (action === "pause") await pauseTorrent(token, hash);
+      else await resumeTorrent(token, hash);
+      onNotice({ type: "success", message: action === "pause" ? "Torrent paused" : "Torrent resumed" });
+      await loadTorrents();
+    } catch (error) {
+      onNotice({ type: "error", message: `Действие не выполнено: ${getErrorMessage(error)}` });
+    } finally {
+      setTorrentLoading(false);
+    }
+  }
+
+  async function confirmDeleteTorrent() {
+    if (!pendingDelete) return;
+    setTorrentLoading(true);
+    try {
+      await deleteTorrent(token, pendingDelete.hash, false);
+      onNotice({ type: "success", message: "Torrent удалён из списка" });
+      setPendingDelete(null);
+      await loadTorrents();
+    } catch (error) {
+      onNotice({ type: "error", message: `Не удалось удалить torrent: ${getErrorMessage(error)}` });
+    } finally {
+      setTorrentLoading(false);
+    }
+  }
+
   return (
     <>
       <div className="admin-header-row">
@@ -112,7 +199,15 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
         <button
           className="icon-button"
           type="button"
-          onClick={activeTab === "monitoring" ? loadMonitoring : onRefresh}
+          onClick={
+            activeTab === "monitoring" || activeTab === "services" || activeTab === "events"
+              ? loadMonitoring
+              : activeTab === "downloads"
+                ? loadTorrents
+                : activeTab === "files"
+                  ? loadFiles
+                  : onRefresh
+          }
           aria-label="Обновить"
         >
           <RefreshCw size={18} aria-hidden="true" />
@@ -149,21 +244,39 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           <EventsTimeline events={events} />
         </section>
       ) : activeTab === "downloads" ? (
-        <AdminLinkPanel
-          title="Downloads"
-          text="Формы YouTube и magnet находятся на странице Actions и используют существующие endpoints /api/youtube и /api/magnet."
-          link="/actions"
-          label="Открыть Actions"
+        <TorrentTable
+          torrents={torrents}
+          loading={torrentLoading}
+          onPause={(hash) => void runTorrentAction("pause", hash)}
+          onResume={(hash) => void runTorrentAction("resume", hash)}
+          onDelete={setPendingDelete}
         />
-      ) : activeTab === "automation" ? (
-        <AdminExternalPanel
-          title="Automation"
-          text="n8n доступен как отдельный сервис. Автоматизации остаются вне v0.1.2 UI."
-          service={services.find((service) => service.id === "n8n")}
+      ) : activeTab === "files" ? (
+        <FileBrowser
+          token={token}
+          data={files}
+          path={filePath}
+          loading={filesLoading}
+          onNavigate={setFilePath}
+          onRefresh={loadFiles}
+          onNotice={onNotice}
         />
+      ) : activeTab === "services" ? (
+        <ServicesHealthTable services={health} />
+      ) : activeTab === "events" ? (
+        <EventsTimeline events={events} />
       ) : (
         <AdminLinkPanel title="Settings" text="Token и режим открытия сервисов находятся в общей странице Settings." link="/settings" label="Открыть Settings" />
       )}
+      {pendingDelete ? (
+        <ConfirmDialog
+          title="Удалить torrent?"
+          text={`Удалить "${pendingDelete.name}" из qBittorrent? Файлы останутся на диске.`}
+          confirmLabel="Удалить"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={confirmDeleteTorrent}
+        />
+      ) : null}
     </>
   );
 }
@@ -174,7 +287,7 @@ function OverviewTab({ services, status, loading }: { services: ServiceItem[]; s
       <section className="status-grid" aria-label="Статус сервера">
         <StatusTile icon={Activity} label="Backend" value={status?.status ?? (loading ? "loading" : "unknown")} />
         <StatusTile icon={Gauge} label="Uptime" value={status ? formatUptime(status.uptime_seconds) : "unknown"} />
-        <StatusTile icon={Server} label="Version" value={status?.version ?? "0.1.2"} />
+        <StatusTile icon={Server} label="Version" value={status?.version ?? "0.2.0"} />
         <StatusTile icon={Clock3} label="Server time" value={formatServerTime(status?.server_time)} />
       </section>
 
@@ -219,20 +332,6 @@ function AdminLinkPanel({ title, text, link, label }: { title: string; text: str
       <Link className="primary-link-button" to={link}>
         {label}
       </Link>
-    </div>
-  );
-}
-
-function AdminExternalPanel({ title, text, service }: { title: string; text: string; service?: ServiceItem }) {
-  return (
-    <div className="panel admin-action-panel">
-      <h2>{title}</h2>
-      <p className="muted">{text}</p>
-      {service ? (
-        <a className="primary-link-button" href={service.url}>
-          Открыть {service.name}
-        </a>
-      ) : null}
     </div>
   );
 }

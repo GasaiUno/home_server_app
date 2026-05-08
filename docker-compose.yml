@@ -9,13 +9,26 @@ services:
       HOME_APP_TOKEN: ${HOME_APP_TOKEN}
       N8N_YT_WEBHOOK: ${N8N_YT_WEBHOOK:-http://n8n:5678/webhook/yt}
       N8N_MAGNET_WEBHOOK: ${N8N_MAGNET_WEBHOOK:-http://n8n:5678/webhook/magnet}
-      APP_VERSION: ${APP_VERSION:-0.1.2}
+      APP_VERSION: ${APP_VERSION:-0.2.0}
       TZ: ${TZ:-Europe/Moscow}
+      QB_URL: ${QB_URL:-http://qbittorrent:8080}
+      QB_USERNAME: ${QB_USERNAME:-}
+      QB_PASSWORD: ${QB_PASSWORD:-}
+      QB_BYPASS_AUTH: ${QB_BYPASS_AUTH:-true}
+      METUBE_URL: ${METUBE_URL:-http://metube:8081}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8091}
       HOST_ROOT_PATH: ${HOST_ROOT_PATH:-/host}
       HOST_PROC_PATH: ${HOST_PROC_PATH:-/host/proc}
       HOST_SYS_PATH: ${HOST_SYS_PATH:-/host/sys}
       HOME_DATA_PATH: ${HOME_DATA_PATH:-/host/home/igor/server}
+      HOME_DATA_ROOT: ${HOME_DATA_ROOT:-/data}
+      MEDIA_PATH: ${MEDIA_PATH:-/data/media}
+      MUSIC_PATH: ${MUSIC_PATH:-/data/music}
+      TORRENTS_PATH: ${TORRENTS_PATH:-/data/torrents}
+      YOUTUBE_PATH: ${YOUTUBE_PATH:-/data/youtube}
+      BOOKS_PATH: ${BOOKS_PATH:-/data/books}
+      ALLOW_FILE_DELETE: ${ALLOW_FILE_DELETE:-false}
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-2048}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_ADMIN_ID: ${TELEGRAM_ADMIN_ID:-}
       ALERTS_ENABLED: ${ALERTS_ENABLED:-true}
@@ -40,6 +53,11 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${MEDIA_HOST_PATH:-/home/igor/server/media}:/data/media
+      - ${MUSIC_HOST_PATH:-/home/igor/server/music}:/data/music
+      - ${TORRENTS_HOST_PATH:-/home/igor/server/torrents}:/data/torrents
+      - ${YOUTUBE_HOST_PATH:-/home/igor/server/youtube}:/data/youtube
+      - ${BOOKS_HOST_PATH:-/home/igor/server/books}:/data/books
       - ./backend/app_data:/app/app_data
     ports:
       - "8090:8000"

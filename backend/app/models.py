@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -41,6 +43,7 @@ class YoutubeRequest(BaseModel):
 
 class MagnetRequest(BaseModel):
     url: str = Field(min_length=1)
+    category: str | None = None
 
     @field_validator("url")
     @classmethod
@@ -165,3 +168,83 @@ class AlertTestResponse(BaseModel):
     status: str
     message: str
     telegram: TelegramStatus
+
+
+class AddMagnetRequest(BaseModel):
+    url: str = Field(min_length=1)
+    category: str | None = None
+
+    @field_validator("url")
+    @classmethod
+    def validate_magnet_url(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped.startswith("magnet:"):
+            raise ValueError("url must start with magnet:")
+        return stripped
+
+
+class TorrentItem(BaseModel):
+    hash: str
+    name: str
+    state: str
+    progress: float
+    size: int
+    downloaded: int
+    uploaded: int
+    dlspeed: int
+    upspeed: int
+    eta: int
+    category: str | None = None
+    save_path: str | None = None
+
+
+class TorrentsResponse(BaseModel):
+    items: list[TorrentItem]
+
+
+class ActionResponse(BaseModel):
+    status: str
+    message: str
+
+
+class FileItem(BaseModel):
+    name: str
+    type: Literal["file", "directory"]
+    path: str
+    size: int | None
+    modified_at: str
+    extension: str | None = None
+
+
+class FilesListResponse(BaseModel):
+    current_path: str
+    parent_path: str
+    items: list[FileItem]
+    allow_delete: bool
+
+
+class MkdirRequest(BaseModel):
+    path: str = Field(min_length=1)
+
+
+class DeleteFileRequest(BaseModel):
+    path: str = Field(min_length=1)
+
+
+class YoutubeDownloadItem(BaseModel):
+    name: str
+    path: str
+    size: int
+    modified_at: str
+    extension: str
+
+
+class YoutubeDownloadsResponse(BaseModel):
+    items: list[YoutubeDownloadItem]
+
+
+class DashboardSummaryResponse(BaseModel):
+    server: dict[str, bool | float | None]
+    torrents: dict[str, int]
+    youtube: dict[str, int]
+    services: dict[str, int]

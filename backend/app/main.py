@@ -4,27 +4,45 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from time import monotonic
 
-from fastapi import Depends, FastAPI, Header, HTTPException, status
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from .alerts import AlertMonitor
 from .config import APP_NAME, APP_VERSION, Settings, get_settings
+from .dashboard_service import get_dashboard_summary
 from .events import EventStore
+from .file_service import delete_path, list_files, mkdir, recent_youtube_downloads, safe_resolve_path, upload_file
+from .integrations.metube import add_youtube_download
+from .integrations.qbittorrent import QBittorrentClient
 from .models import (
     AlertTestResponse,
+    ActionResponse,
+    AddMagnetRequest,
+    DashboardSummaryResponse,
+    DeleteFileRequest,
     DockerContainersResponse,
     EventsResponse,
+    FileItem,
+    FilesListResponse,
     MagnetRequest,
+    MkdirRequest,
     ServerMetricsResponse,
     ServicesHealthResponse,
     ServicesResponse,
     StatusResponse,
     TelegramStatus,
+    TorrentsResponse,
     WebhookResponse,
     YoutubeRequest,
+    YoutubeDownloadsResponse,
 )
 from .monitoring import check_services_health, collect_server_metrics, get_docker_containers
 from .services import post_magnet_webhook, post_youtube_webhook
+from .telegram import send_telegram_message
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -89,6 +107,123 @@ def services_endpoint(current_settings: Settings = Depends(require_token)) -> Se
     return ServicesResponse(services=current_settings.services)
 
 
+@app.get("/api/dashboard/summary", response_model=DashboardSummaryResponse)
+async def dashboard_summary_endpoint(current_settings: Settings = Depends(require_token)) -> DashboardSummaryResponse:
+    return await get_dashboard_summary(current_settings, started_at, started_at_iso)
+
+
+@app.get("/api/torrents", response_model=TorrentsResponse)
+async def torrents_endpoint(current_settings: Settings = Depends(require_token)) -> TorrentsResponse:
+    items = await QBittorrentClient(current_settings).get_torrents()
+    return TorrentsResponse(items=items)
+
+
+@app.post("/api/torrents/add-magnet", response_model=ActionResponse)
+async def torrents_add_magnet_endpoint(
+    payload: AddMagnetRequest,
+    current_settings: Settings = Depends(require_token),
+) -> ActionResponse:
+    try:
+        await QBittorrentClient(current_settings).add_magnet(payload.url, payload.category)
+    except Exception as exc:  # noqa: BLE001
+        event_store.add_event("error", "magnet_error", "Ошибка добавления magnet", False)
+        await send_telegram_message(current_settings, "❌ Ошибка добавления magnet")
+        raise HTTPException(status_code=502, detail="Не удалось добавить magnet в qBittorrent") from exc
+    event_store.add_event("info", "magnet_added", f"Magnet добавлен: {payload.url[:120]}", False)
+    await send_telegram_message(current_settings, f"🧲 Magnet добавлен: {payload.url[:120]}")
+    return ActionResponse(status="ok", message="Magnet добавлен")
+
+
+@app.post("/api/torrents/upload", response_model=ActionResponse)
+async def torrents_upload_endpoint(
+    file: UploadFile = File(...),
+    category: str | None = Form(default=None),
+    current_settings: Settings = Depends(require_token),
+) -> ActionResponse:
+    if not (file.filename or "").endswith(".torrent"):
+        raise HTTPException(status_code=400, detail="Нужен .torrent файл")
+    with NamedTemporaryFile(delete=False, suffix=".torrent") as temp_file:
+        temp_path = Path(temp_file.name)
+        while chunk := await file.read(1024 * 1024):
+            temp_file.write(chunk)
+    try:
+        await QBittorrentClient(current_settings).add_torrent_file(temp_path, category)
+    finally:
+        temp_path.unlink(missing_ok=True)
+    event_store.add_event("info", "torrent_file_uploaded", f"Torrent файл загружен: {file.filename}", False)
+    return ActionResponse(status="ok", message="Torrent файл отправлен")
+
+
+@app.post("/api/torrents/{torrent_hash}/pause", response_model=ActionResponse)
+async def torrent_pause_endpoint(torrent_hash: str, current_settings: Settings = Depends(require_token)) -> ActionResponse:
+    await QBittorrentClient(current_settings).pause_torrent(torrent_hash)
+    event_store.add_event("info", "torrent_paused", f"Torrent paused: {torrent_hash}", False)
+    return ActionResponse(status="ok", message="Torrent paused")
+
+
+@app.post("/api/torrents/{torrent_hash}/resume", response_model=ActionResponse)
+async def torrent_resume_endpoint(torrent_hash: str, current_settings: Settings = Depends(require_token)) -> ActionResponse:
+    await QBittorrentClient(current_settings).resume_torrent(torrent_hash)
+    event_store.add_event("info", "torrent_resumed", f"Torrent resumed: {torrent_hash}", False)
+    return ActionResponse(status="ok", message="Torrent resumed")
+
+
+@app.delete("/api/torrents/{torrent_hash}", response_model=ActionResponse)
+async def torrent_delete_endpoint(
+    torrent_hash: str,
+    delete_files: bool = Query(default=False),
+    current_settings: Settings = Depends(require_token),
+) -> ActionResponse:
+    if delete_files and not current_settings.allow_file_delete:
+        raise HTTPException(status_code=403, detail="Удаление файлов отключено")
+    await QBittorrentClient(current_settings).delete_torrent(torrent_hash, delete_files)
+    event_store.add_event("warning", "torrent_deleted", f"Torrent deleted: {torrent_hash}", False)
+    return ActionResponse(status="ok", message="Torrent deleted")
+
+
+@app.get("/api/youtube/downloads", response_model=YoutubeDownloadsResponse)
+def youtube_downloads_endpoint(current_settings: Settings = Depends(require_token)) -> YoutubeDownloadsResponse:
+    return YoutubeDownloadsResponse(items=recent_youtube_downloads(current_settings))
+
+
+@app.get("/api/files", response_model=FilesListResponse)
+def files_endpoint(path: str = Query(default="media"), current_settings: Settings = Depends(require_token)) -> FilesListResponse:
+    return list_files(current_settings, path)
+
+
+@app.get("/api/files/download")
+def files_download_endpoint(path: str = Query(...), current_settings: Settings = Depends(require_token)) -> FileResponse:
+    _, resolved = safe_resolve_path(current_settings, path)
+    if not resolved.exists() or not resolved.is_file():
+        raise HTTPException(status_code=404, detail="file not found")
+    return FileResponse(resolved, filename=resolved.name)
+
+
+@app.post("/api/files/upload", response_model=FileItem)
+async def files_upload_endpoint(
+    path: str = Form(...),
+    file: UploadFile = File(...),
+    current_settings: Settings = Depends(require_token),
+) -> FileItem:
+    item = await upload_file(current_settings, path, file)
+    event_store.add_event("info", "file_uploaded", f"Файл загружен: {item.path}", False)
+    return item
+
+
+@app.post("/api/files/mkdir", response_model=ActionResponse)
+def files_mkdir_endpoint(payload: MkdirRequest, current_settings: Settings = Depends(require_token)) -> ActionResponse:
+    mkdir(current_settings, payload.path)
+    event_store.add_event("info", "folder_created", f"Папка создана: {payload.path}", False)
+    return ActionResponse(status="ok", message="Папка создана")
+
+
+@app.delete("/api/files", response_model=ActionResponse)
+def files_delete_endpoint(payload: DeleteFileRequest, current_settings: Settings = Depends(require_token)) -> ActionResponse:
+    delete_path(current_settings, payload.path)
+    event_store.add_event("warning", "file_deleted", f"Файл удалён: {payload.path}", False)
+    return ActionResponse(status="ok", message="Удалено")
+
+
 @app.get("/api/admin/metrics", response_model=ServerMetricsResponse)
 def admin_metrics_endpoint(current_settings: Settings = Depends(require_token)) -> ServerMetricsResponse:
     return collect_server_metrics(current_settings, started_at, started_at_iso)
@@ -135,7 +270,15 @@ async def youtube_endpoint(
     payload: YoutubeRequest,
     current_settings: Settings = Depends(require_token),
 ) -> WebhookResponse:
-    return await post_youtube_webhook(payload, current_settings.n8n_yt_webhook)
+    try:
+        await add_youtube_download(current_settings, payload)
+    except Exception:
+        event_store.add_event("error", "youtube_error", "Ошибка YouTube-загрузки", False)
+        await send_telegram_message(current_settings, "❌ Ошибка YouTube-загрузки")
+        return await post_youtube_webhook(payload, current_settings.n8n_yt_webhook)
+    event_store.add_event("info", "youtube_added", f"YouTube отправлен на загрузку: {payload.url[:120]}", False)
+    await send_telegram_message(current_settings, "🎥 YouTube отправлен на загрузку")
+    return WebhookResponse(status="ok", message="Request accepted")
 
 
 @app.post("/api/magnet", response_model=WebhookResponse)

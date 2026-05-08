@@ -102,3 +102,64 @@ export type TelegramStatus = {
   enabled: boolean;
   configured: boolean;
 };
+
+export type TorrentItem = {
+  hash: string;
+  name: string;
+  state: string;
+  progress: number;
+  size: number;
+  downloaded: number;
+  uploaded: number;
+  dlspeed: number;
+  upspeed: number;
+  eta: number;
+  category: string | null;
+  save_path: string | null;
+};
+
+export type FileItem = {
+  name: string;
+  type: "file" | "directory";
+  path: string;
+  size: number | null;
+  modified_at: string;
+  extension: string | null;
+};
+
+export type FilesListResponse = {
+  current_path: string;
+  parent_path: string;
+  items: FileItem[];
+  allow_delete: boolean;
+};
+
+export type YoutubeDownloadItem = {
+  name: string;
+  path: string;
+  size: number;
+  modified_at: string;
+  extension: string;
+};
+
+export type DashboardSummary = {
+  server: {
+    online: boolean;
+    disk_percent: number | null;
+    memory_percent: number | null;
+    cpu_percent: number | null;
+  };
+  torrents: {
+    active: number;
+    downloading: number;
+    total_download_speed: number;
+    total_upload_speed: number;
+  };
+  youtube: {
+    recent_count: number;
+  };
+  services: {
+    online: number;
+    offline: number;
+  };
+};

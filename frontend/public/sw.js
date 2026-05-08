@@ -1,4 +1,4 @@
-const CACHE_NAME = "home-server-v0.1.2";
+const CACHE_NAME = "home-server-v0.2.0";
 const APP_SHELL = ["/", "/manifest.json", "/icons/icon.svg"];
 
 self.addEventListener("install", (event) => {

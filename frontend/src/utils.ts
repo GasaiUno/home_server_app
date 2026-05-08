@@ -25,6 +25,22 @@ export function formatBytes(value: number | null | undefined): string {
   return `${nextValue.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
 }
 
+export function formatSpeed(value: number | null | undefined): string {
+  return `${formatBytes(value ?? 0)}/s`;
+}
+
+export function formatEta(seconds: number | null | undefined): string {
+  if (!seconds || seconds < 0 || seconds >= 8640000) {
+    return "∞";
+  }
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}ч ${minutes}м`;
+  }
+  return `${minutes}м`;
+}
+
 export function formatPercent(value: number | null | undefined): string {
   return value === null || value === undefined ? "Недоступно" : `${value.toFixed(1)}%`;
 }
