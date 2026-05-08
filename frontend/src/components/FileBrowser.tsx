@@ -43,6 +43,13 @@ export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh,
 
   return (
     <section className="files-page">
+      <div className="file-roots" aria-label="Разделы файлов">
+        {["media", "music", "torrents", "youtube", "books"].map((root) => (
+          <button key={root} type="button" className={path.split("/")[0] === root ? "active" : ""} onClick={() => onNavigate(root)}>
+            {root}
+          </button>
+        ))}
+      </div>
       <FileBreadcrumbs path={path} onNavigate={onNavigate} />
       <FileUpload token={token} path={path} onNotice={onNotice} onChanged={onRefresh} />
       <section className="panel table-panel">

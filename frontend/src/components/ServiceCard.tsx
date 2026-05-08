@@ -18,6 +18,7 @@ export function ServiceCard({ service, target, toAdmin = false }: ServiceCardPro
         <Icon size={28} aria-hidden="true" />
       </span>
       <span className="service-card-copy">
+        <em>{service.category}</em>
         <strong>{service.name}</strong>
         <small>{service.description}</small>
       </span>

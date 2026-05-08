@@ -5,6 +5,7 @@ import { getServices, getStatus } from "./api";
 import { AppNavigation } from "./components/AppNavigation";
 import { ActionsPage } from "./pages/ActionsPage";
 import { AdminPage } from "./pages/AdminPage";
+import { FilesPage } from "./pages/FilesPage";
 import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import type { Notice, ServiceItem, ServiceTarget, StatusResponse } from "./types";
@@ -114,6 +115,7 @@ export function App() {
             element={<HomePage token={token} services={services} status={status} loading={loading} serviceTarget={serviceTarget} />}
           />
           <Route path="/actions" element={<ActionsPage token={token} onNotice={setNotice} />} />
+          <Route path="/files" element={<FilesPage token={token} onNotice={setNotice} />} />
           <Route
             path="/admin"
             element={

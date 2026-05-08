@@ -10,6 +10,12 @@
 - Home dashboard: summary, активные торренты, последние загрузки, mini disk usage.
 - Admin tabs: Overview, Monitoring, Downloads, Files, Services, Events, Settings.
 
+## UI Refresh
+
+Интерфейс сделан mobile-first: на телефоне используется fixed bottom navigation с safe-area отступами, крупные tap targets и карточный layout без горизонтального overflow. На desktop используется единый dashboard-shell с боковой навигацией, ограниченной шириной контента и плотными техническими карточками для Admin Mode.
+
+Основные элементы дизайн-системы находятся во `frontend/src/styles.css`: CSS variables для цветов, радиусов, теней, spacing, состояний focus/hover/active, карточек, форм, tabs, progress bars, skeleton/error/empty states. Приложение не использует тяжёлый UI framework.
+
 ## Режимы интерфейса
 
 - **Home Mode** - главный экран для повседневного использования: крупные карточки фильмов, музыки, файлов, загрузок, YouTube, автоматизации и сервера.
@@ -21,6 +27,7 @@
 
 - `/` - Home: домашний центр и быстрые действия.
 - `/actions` - Actions: формы `Скачать YouTube` и `Добавить magnet`.
+- `/files` - Files: быстрый файловый браузер для разрешённых папок.
 - `/admin` - Admin: техническая панель.
 - `/settings` - Settings: смена token, информация о backend, настройка открытия сервисов в текущем окне или новой вкладке.
 
@@ -35,6 +42,8 @@
 - Автоматизация / n8n: `http://10.8.1.5:5678`
 - Файлы / File Browser: `http://10.8.1.5:8082`
 - Homepage: `http://10.8.1.5:3000`
+
+Список карточек frontend получает из `GET /api/services`. Чтобы изменить карточку, URL, icon, accent или category, обновите конфигурацию сервисов в backend (`backend/app/config.py`) и перезапустите backend. Компоненты Home Mode не хардкодят адреса сервисов.
 
 ## Env
 
@@ -199,6 +208,15 @@ ALLOW_FILE_DELETE=false
 ```
 
 Включайте только если приложение доступно строго через VPN и защищено сильным token.
+
+## PWA на телефоне
+
+Manifest настроен как standalone app с тёмным theme/background color. Для установки:
+
+1. Откройте `http://10.8.1.5:8091` или локальный адрес frontend через VPN.
+2. Введите access token.
+3. В меню браузера выберите `Добавить на экран Домой` / `Install app`.
+4. После запуска с иконки приложение откроется как отдельное PWA с нижней мобильной навигацией.
 
 ## Обновление на сервере
 
