@@ -1,0 +1,23 @@
+services:
+  homeapp-backend:
+    build:
+      context: ./backend
+    container_name: homeapp-backend
+    restart: unless-stopped
+    environment:
+      HOME_APP_TOKEN: ${HOME_APP_TOKEN}
+      N8N_YT_WEBHOOK: ${N8N_YT_WEBHOOK:-http://n8n:5678/webhook/yt}
+      N8N_MAGNET_WEBHOOK: ${N8N_MAGNET_WEBHOOK:-http://n8n:5678/webhook/magnet}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8091}
+    ports:
+      - "8090:8000"
+
+  homeapp-frontend:
+    build:
+      context: ./frontend
+    container_name: homeapp-frontend
+    restart: unless-stopped
+    depends_on:
+      - homeapp-backend
+    ports:
+      - "8091:80"
