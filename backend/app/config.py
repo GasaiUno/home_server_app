@@ -16,6 +16,7 @@ DEFAULT_SERVICES = [
         id="jellyfin",
         name="Фильмы",
         url="http://10.8.1.5:8096",
+        health_url=getenv("HEALTH_URL_JELLYFIN", "http://jellyfin:8096"),
         description="Jellyfin — фильмы и сериалы",
         icon="film",
         accent="purple",
@@ -25,6 +26,7 @@ DEFAULT_SERVICES = [
         id="navidrome",
         name="Музыка",
         url="http://10.8.1.5:4533",
+        health_url=getenv("HEALTH_URL_NAVIDROME", "http://navidrome:4533"),
         description="Navidrome — музыкальная библиотека",
         icon="headphones",
         accent="teal",
@@ -34,6 +36,7 @@ DEFAULT_SERVICES = [
         id="file-browser",
         name="Файлы",
         url="http://10.8.1.5:8082",
+        health_url=getenv("HEALTH_URL_FILE_BROWSER", "http://filebrowser:80"),
         description="File Browser — доступ к файлам",
         icon="folder",
         accent="amber",
@@ -43,6 +46,7 @@ DEFAULT_SERVICES = [
         id="qbittorrent",
         name="Торренты",
         url="http://10.8.1.5:8080",
+        health_url=getenv("HEALTH_URL_QBITTORRENT", "http://qbittorrent:8080"),
         description="qBittorrent — загрузки",
         icon="cloud-download",
         accent="blue",
@@ -52,6 +56,7 @@ DEFAULT_SERVICES = [
         id="metube",
         name="YouTube",
         url="http://10.8.1.5:8081",
+        health_url=getenv("HEALTH_URL_METUBE", "http://metube:8081"),
         description="Скачать видео или аудио",
         icon="youtube",
         accent="red",
@@ -61,6 +66,7 @@ DEFAULT_SERVICES = [
         id="n8n",
         name="Автоматизация",
         url="http://10.8.1.5:5678",
+        health_url=getenv("HEALTH_URL_N8N", "http://n8n:5678"),
         description="n8n — сценарии и боты",
         icon="workflow",
         accent="pink",
@@ -70,6 +76,7 @@ DEFAULT_SERVICES = [
         id="homepage",
         name="Homepage",
         url="http://10.8.1.5:3000",
+        health_url=getenv("HEALTH_URL_HOMEPAGE", "http://homepage:3000"),
         description="Домашняя стартовая страница",
         icon="home",
         accent="slate",
@@ -98,6 +105,7 @@ class Settings(BaseModel):
     alert_temperature_c: float
     alert_check_interval_seconds: int
     alert_cooldown_seconds: int
+    alert_service_failures: int
     events_path: Path
 
     @property
@@ -163,5 +171,6 @@ def get_settings() -> Settings:
         alert_temperature_c=_get_float("ALERT_TEMPERATURE_C", 80),
         alert_check_interval_seconds=_get_int("ALERT_CHECK_INTERVAL_SECONDS", 60),
         alert_cooldown_seconds=_get_int("ALERT_COOLDOWN_SECONDS", 1800),
+        alert_service_failures=_get_int("ALERT_SERVICE_FAILURES", 2),
         events_path=Path(getenv("EVENTS_PATH", "app_data/events.json")),
     )

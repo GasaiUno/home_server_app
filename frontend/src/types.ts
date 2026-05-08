@@ -6,6 +6,7 @@ export type ServiceItem = {
   icon: string;
   accent: string;
   category: string;
+  health_url?: string | null;
 };
 
 export type StatusResponse = {
@@ -82,6 +83,7 @@ export type ServiceHealthItem = {
   id: string;
   name: string;
   url: string;
+  checked_url: string;
   online: boolean;
   status_code: number | null;
   response_time_ms: number | null;

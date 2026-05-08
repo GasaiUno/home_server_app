@@ -9,6 +9,7 @@ class ServiceItem(BaseModel):
     icon: str
     accent: str
     category: str
+    health_url: str | None = None
 
 
 class ServicesResponse(BaseModel):
@@ -131,6 +132,7 @@ class ServiceHealthItem(BaseModel):
     id: str
     name: str
     url: str
+    checked_url: str
     online: bool
     status_code: int | None
     response_time_ms: int | None

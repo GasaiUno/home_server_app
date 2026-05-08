@@ -1,5 +1,21 @@
 [
   {
+    "id": "2afdc5c4-6369-4762-9561-9210fa467996",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T10:02:40.951223+00:00",
+    "sent_to_telegram": false
+  },
+  {
+    "id": "688d1930-9ac3-4b7f-abc4-822c24073107",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T10:02:23.681041+00:00",
+    "sent_to_telegram": false
+  },
+  {
     "id": "a13ab888-4e78-419c-b8c3-f19990290d02",
     "level": "info",
     "type": "telegram_test",

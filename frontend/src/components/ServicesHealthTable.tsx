@@ -17,7 +17,7 @@ export function ServicesHealthTable({ services }: ServicesHealthTableProps) {
             <span className={service.online ? "health-dot online" : "health-dot offline"} />
             <div>
               <strong>{service.name}</strong>
-              <small>{service.url}</small>
+              <small>{service.checked_url}</small>
             </div>
             <span>{service.status_code ?? "offline"}</span>
             <span>{service.response_time_ms ?? 0} ms</span>

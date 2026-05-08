@@ -59,6 +59,7 @@ def test_services_include_home_mode_metadata_without_breaking_existing_fields(cl
     assert jellyfin["icon"] == "film"
     assert jellyfin["accent"] == "purple"
     assert jellyfin["category"] == "media"
+    assert jellyfin["health_url"] == "http://jellyfin:8096"
 
 
 def test_youtube_rejects_non_http_url(client):
@@ -115,6 +116,7 @@ def test_admin_services_health_returns_service_checks(client):
     assert "services" in payload
     assert {service["id"] for service in payload["services"]} >= {"jellyfin", "navidrome"}
     assert all("response_time_ms" in service for service in payload["services"])
+    assert all("checked_url" in service for service in payload["services"])
 
 
 def test_admin_events_returns_events_and_telegram_status(client):

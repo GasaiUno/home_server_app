@@ -18,6 +18,7 @@ class AlertMonitor:
         self.backend_started_at = backend_started_at
         self.backend_started_at_iso = backend_started_at_iso
         self.cooldowns: dict[str, float] = {}
+        self.service_failures: dict[str, int] = {}
         self._task: asyncio.Task | None = None
         self._stopping = asyncio.Event()
 
@@ -96,12 +97,18 @@ class AlertMonitor:
         health = await check_services_health(self.settings)
         for service in health.services:
             if not service.online:
+                failures = self.service_failures.get(service.id, 0) + 1
+                self.service_failures[service.id] = failures
+                if failures < self.settings.alert_service_failures:
+                    continue
                 await self._emit_once(
                     f"service_down:{service.id}",
                     "critical",
                     "service_down",
                     f"🚨 Сервис {service.name} недоступен",
                 )
+            else:
+                self.service_failures.pop(service.id, None)
 
     async def _threshold_alert(self, key: str, value: float | None, threshold: float, level: str, template: str) -> None:
         if value is None or value < threshold:

@@ -72,7 +72,10 @@ def _collect_memory() -> MemoryMetrics:
 
 
 def _collect_swap() -> SwapMetrics:
-    swap = psutil.swap_memory()
+    try:
+        swap = psutil.swap_memory()
+    except (PermissionError, OSError):
+        return SwapMetrics(total=None, used=None, percent=None)
     return SwapMetrics(total=swap.total, used=swap.used, percent=round(swap.percent, 1))
 
 
@@ -175,9 +178,10 @@ async def check_services_health(settings: Settings) -> ServicesHealthResponse:
         started = time.perf_counter()
         status_code: int | None = None
         online = False
+        checked_url = service.health_url or service.url
         try:
             async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
-                response = await client.get(service.url)
+                response = await client.get(checked_url)
                 status_code = response.status_code
                 online = response.status_code < 500
         except httpx.HTTPError:
@@ -187,6 +191,7 @@ async def check_services_health(settings: Settings) -> ServicesHealthResponse:
             id=service.id,
             name=service.name,
             url=service.url,
+            checked_url=checked_url,
             online=online,
             status_code=status_code,
             response_time_ms=elapsed,
