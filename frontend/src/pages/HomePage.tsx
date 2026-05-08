@@ -19,7 +19,7 @@ export function HomePage({ services, status, loading, serviceTarget }: HomePageP
   const serverCard: ServiceItem = {
     id: "server",
     name: "Сервер",
-    description: "Статус, ресурсы и управление",
+        description: "Статус, мониторинг и управление",
     url: "/admin",
     icon: "server",
     accent: "slate",

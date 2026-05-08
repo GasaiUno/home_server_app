@@ -9,3 +9,4 @@ __pycache__/
 venv/
 htmlcov/
 .coverage
+backend/app_data/events.json

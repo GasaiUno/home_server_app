@@ -1,4 +1,12 @@
-import type { ServicesResponse, StatusResponse } from "./types";
+import type {
+  DockerContainer,
+  EventItem,
+  ServerMetrics,
+  ServiceHealthItem,
+  ServicesResponse,
+  StatusResponse,
+  TelegramStatus
+} from "./types";
 
 type JsonBody = Record<string, string>;
 
@@ -40,4 +48,24 @@ export function sendMagnet(token: string, body: JsonBody): Promise<{ status: str
     method: "POST",
     body: JSON.stringify(body)
   });
+}
+
+export function getAdminMetrics(token: string): Promise<ServerMetrics> {
+  return request<ServerMetrics>("/api/admin/metrics", token);
+}
+
+export function getAdminDocker(token: string): Promise<{ containers: DockerContainer[] }> {
+  return request<{ containers: DockerContainer[] }>("/api/admin/docker", token);
+}
+
+export function getAdminServicesHealth(token: string): Promise<{ services: ServiceHealthItem[] }> {
+  return request<{ services: ServiceHealthItem[] }>("/api/admin/services-health", token);
+}
+
+export function getAdminEvents(token: string): Promise<{ events: EventItem[]; telegram: TelegramStatus }> {
+  return request<{ events: EventItem[]; telegram: TelegramStatus }>("/api/admin/events", token);
+}
+
+export function sendTestTelegramAlert(token: string): Promise<{ status: string; message: string; telegram: TelegramStatus }> {
+  return request("/api/admin/alerts/test", token, { method: "POST" });
 }

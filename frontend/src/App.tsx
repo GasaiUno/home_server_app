@@ -116,7 +116,16 @@ export function App() {
           <Route path="/actions" element={<ActionsPage token={token} onNotice={setNotice} />} />
           <Route
             path="/admin"
-            element={<AdminPage services={services} status={status} loading={loading} onRefresh={loadDashboard} />}
+            element={
+              <AdminPage
+                token={token}
+                services={services}
+                status={status}
+                loading={loading}
+                onRefresh={loadDashboard}
+                onNotice={setNotice}
+              />
+            }
           />
           <Route
             path="/settings"

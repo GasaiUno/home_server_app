@@ -1,0 +1,50 @@
+[
+  {
+    "id": "a13ab888-4e78-419c-b8c3-f19990290d02",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T09:26:11.923875+00:00",
+    "sent_to_telegram": false
+  },
+  {
+    "id": "109cd767-3dae-4294-a215-745aa4c85188",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T09:24:57.429586+00:00",
+    "sent_to_telegram": false
+  },
+  {
+    "id": "cb7c87a3-e5e4-4612-ab3e-1b6fe5e8c1e1",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T09:22:05.512861+00:00",
+    "sent_to_telegram": false
+  },
+  {
+    "id": "18118088-a115-407e-8bcf-2a881ce32846",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T09:21:07.064807+00:00",
+    "sent_to_telegram": false
+  },
+  {
+    "id": "8a093da9-d993-4538-a34f-27aad094343d",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T09:18:38.307256+00:00",
+    "sent_to_telegram": false
+  },
+  {
+    "id": "dfce8894-f7da-49d4-9f50-f18320f6d02f",
+    "level": "info",
+    "type": "telegram_test",
+    "message": "Тестовое уведомление Telegram",
+    "created_at": "2026-05-08T09:18:07.998309+00:00",
+    "sent_to_telegram": false
+  }
+]

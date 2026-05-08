@@ -20,7 +20,7 @@ export function StatusBadge({ status, loading }: StatusBadgeProps) {
       </div>
       <div>
         <Server size={17} aria-hidden="true" />
-        <span>Версия: {status?.version ?? "0.1.1"}</span>
+        <span>Версия: {status?.version ?? "0.1.2"}</span>
       </div>
     </section>
   );

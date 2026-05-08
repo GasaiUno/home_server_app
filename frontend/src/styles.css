@@ -641,6 +641,270 @@ h2 {
   color: #8ff0c4;
 }
 
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 6px;
+  overflow-x: auto;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.admin-tabs button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: transparent;
+  color: #9ca9bd;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.admin-tabs button.active {
+  background: rgba(72, 213, 151, 0.16);
+  color: #8ff0c4;
+}
+
+.monitoring-page {
+  display: grid;
+  gap: 18px;
+}
+
+.monitoring-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.test-alert-button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  padding: 0 16px;
+}
+
+.telegram-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.telegram-panel h2 {
+  margin-bottom: 6px;
+}
+
+.monitoring-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric-card {
+  display: grid;
+  gap: 10px;
+  min-height: 150px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.2);
+}
+
+.metric-card-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #c9d3e4;
+  font-weight: 850;
+}
+
+.metric-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(119, 167, 255, 0.14);
+  color: #9fbfff;
+}
+
+.metric-card strong {
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.metric-card small,
+.mono-text {
+  color: #9ca9bd;
+  line-height: 1.35;
+}
+
+.mono-text {
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #48d597;
+}
+
+.tone-warning .progress-track span,
+.status-pill.tone-warning {
+  background: #f6c66b;
+}
+
+.tone-critical .progress-track span,
+.status-pill.tone-critical {
+  background: #ff7676;
+}
+
+.tone-warning .metric-icon {
+  background: rgba(246, 198, 107, 0.15);
+  color: #f6c66b;
+}
+
+.tone-critical .metric-icon {
+  background: rgba(255, 118, 118, 0.14);
+  color: #ff7676;
+}
+
+.monitoring-tables {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.table-panel {
+  min-width: 0;
+}
+
+.responsive-table {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #9ca9bd;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+td small {
+  display: block;
+  max-width: 260px;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #9ca9bd;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-pill {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #48d597;
+  color: #06110d;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.health-list,
+.events-timeline {
+  display: grid;
+  gap: 10px;
+}
+
+.health-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.26);
+}
+
+.health-row small {
+  display: block;
+  overflow: hidden;
+  color: #9ca9bd;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.health-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+}
+
+.health-dot.online {
+  background: #48d597;
+  box-shadow: 0 0 0 5px rgba(72, 213, 151, 0.12);
+}
+
+.health-dot.offline {
+  background: #ff7676;
+  box-shadow: 0 0 0 5px rgba(255, 118, 118, 0.12);
+}
+
+.event-item {
+  display: grid;
+  gap: 6px;
+  padding: 13px 14px;
+  border-left: 3px solid #77a7ff;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.3);
+}
+
+.event-item.level-warning {
+  border-left-color: #f6c66b;
+}
+
+.event-item.level-critical {
+  border-left-color: #ff7676;
+}
+
+.event-item small {
+  color: #9ca9bd;
+}
+
 .auth-screen {
   display: grid;
   min-height: 100vh;
@@ -688,7 +952,8 @@ h2 {
 
 @media (max-width: 1100px) {
   .home-services-grid,
-  .quick-grid {
+  .quick-grid,
+  .monitoring-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -742,7 +1007,8 @@ h2 {
   .home-hero,
   .content-grid,
   .forms-layout,
-  .settings-grid {
+  .settings-grid,
+  .monitoring-tables {
     grid-template-columns: 1fr;
   }
 
@@ -763,8 +1029,22 @@ h2 {
 
   .home-services-grid,
   .quick-grid,
-  .status-grid {
+  .status-grid,
+  .monitoring-grid {
     grid-template-columns: 1fr;
+  }
+
+  .monitoring-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .test-alert-button {
+    width: 100%;
+  }
+
+  .health-row {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .home-service-card {

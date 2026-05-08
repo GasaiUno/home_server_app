@@ -31,7 +31,7 @@ def test_status_returns_backend_metadata_with_token(client):
     assert response.status_code == 200
     assert payload["status"] == "ok"
     assert payload["app"] == "Home Server App"
-    assert payload["version"] == "0.1.1"
+    assert payload["version"] == "0.1.2"
     assert isinstance(payload["uptime_seconds"], int)
     assert payload["server_time"]
 
@@ -79,3 +79,57 @@ def test_magnet_rejects_non_magnet_url(client):
     )
 
     assert response.status_code == 422
+
+
+def test_admin_metrics_requires_token(client):
+    response = client.get("/api/admin/metrics")
+
+    assert response.status_code == 401
+
+
+def test_admin_metrics_returns_server_sections(client):
+    response = client.get("/api/admin/metrics", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert {"cpu", "memory", "swap", "disk", "uptime", "temperature"} <= set(payload)
+    assert isinstance(payload["cpu"]["percent"], int | float)
+    assert "root" in payload["disk"]
+    assert payload["uptime"]["backend_uptime_seconds"] >= 0
+
+
+def test_admin_docker_returns_container_list(client):
+    response = client.get("/api/admin/docker", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert "containers" in payload
+    assert isinstance(payload["containers"], list)
+
+
+def test_admin_services_health_returns_service_checks(client):
+    response = client.get("/api/admin/services-health", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert "services" in payload
+    assert {service["id"] for service in payload["services"]} >= {"jellyfin", "navidrome"}
+    assert all("response_time_ms" in service for service in payload["services"])
+
+
+def test_admin_events_returns_events_and_telegram_status(client):
+    response = client.get("/api/admin/events", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert "events" in payload
+    assert "telegram" in payload
+    assert payload["telegram"]["configured"] is False
+
+
+def test_admin_test_alert_without_telegram_config_does_not_fail(client):
+    response = client.post("/api/admin/alerts/test", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["status"] in {"sent", "disabled"}
