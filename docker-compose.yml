@@ -4,10 +4,13 @@ services:
       context: ./backend
     container_name: homeapp-backend
     restart: unless-stopped
+    mem_limit: 256m
     environment:
       HOME_APP_TOKEN: ${HOME_APP_TOKEN}
       N8N_YT_WEBHOOK: ${N8N_YT_WEBHOOK:-http://n8n:5678/webhook/yt}
       N8N_MAGNET_WEBHOOK: ${N8N_MAGNET_WEBHOOK:-http://n8n:5678/webhook/magnet}
+      APP_VERSION: ${APP_VERSION:-0.1.2}
+      TZ: ${TZ:-Europe/Moscow}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8091}
       HOST_ROOT_PATH: ${HOST_ROOT_PATH:-/host}
       HOST_PROC_PATH: ${HOST_PROC_PATH:-/host/proc}
@@ -32,13 +35,22 @@ services:
       - ./backend/app_data:/app/app_data
     ports:
       - "8090:8000"
+    networks:
+      - server_default
 
   homeapp-frontend:
     build:
       context: ./frontend
     container_name: homeapp-frontend
     restart: unless-stopped
+    mem_limit: 128m
     depends_on:
       - homeapp-backend
     ports:
       - "8091:80"
+    networks:
+      - server_default
+
+networks:
+  server_default:
+    external: true
