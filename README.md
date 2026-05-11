@@ -18,10 +18,10 @@ Frontend открывается на `8091`, backend API на `8090`.
 - управление qBittorrent;
 - список YouTube-загрузок;
 - файловый браузер по разрешённым папкам;
-- dashboard summary;
-- monitoring;
-- Docker/services health overview;
-- events;
+- сводка состояния сервера;
+- мониторинг;
+- обзор состояния Docker/services;
+- события;
 - Telegram alerts;
 - mobile-first UI;
 - bottom navigation;
@@ -33,8 +33,9 @@ Frontend открывается на `8091`, backend API на `8090`.
 - admin service whitelist foundation;
 - audit log helper;
 - Docker logs foundation для разрешённых сервисов;
-- Dark Liquid Control UI redesign;
-- bento-style Home Control Center;
+- русифицированный интерфейс v0.2.3;
+- главная страница вокруг реальных сервисов домашнего сервера;
+- группы “Фильмы и сериалы”, “Музыка”, “Загрузки”, “Файлы”, “Автоматизация”, “Администрирование”;
 - glass-style mobile navigation.
 
 ## Roadmap
@@ -97,12 +98,13 @@ Frontend открывается на `8091`, backend API на `8090`.
 
 ### v0.2.3 — UX/UI Redesign
 
-- Dark Liquid Control visual direction
+- service-oriented home page for real home server scenarios
+- Russian-first UI labels
 - refined mobile-first app shell
 - glass-style bottom navigation
-- bento-style dashboard sections
+- service groups: Фильмы и сериалы, Музыка, Загрузки, Файлы, Автоматизация, Администрирование
 - polished loading, empty and error states
-- improved Home, Actions, Downloads, Files, Admin and Token screen UX
+- backend/API contracts unchanged
 
 ### v0.3 — media overview and service control
 
@@ -173,21 +175,23 @@ v0.2.2 — security/stability foundation перед v0.3. Версия доба�
 
 ## v0.2.3 — UX/UI Redesign
 
-v0.2.3 обновляет frontend до визуального направления **Dark Liquid Control**. Цель — сделать приложение похожим на mobile-first control center для домашнего сервера, а не на стандартную web-админку.
+v0.2.3 перестраивает frontend вокруг реальных сценариев домашнего сервера. Главная страница больше не является абстрактным dashboard: она ведёт к Jellyfin, Navidrome, qBittorrent, MeTube, File Browser, n8n и административным разделам через понятные русскоязычные группы.
 
 Принципы дизайна:
 
 - mobile-first;
-- modern control center;
-- bento-grid layout;
+- домашняя панель управления вместо generic admin dashboard;
+- сервисные группы по задачам;
 - тёмная база;
 - мягкие glass panels;
 - аккуратные glow accents;
 - readable typography;
-- status-first dashboard;
+- статус сервера без вытеснения сервисов;
 - крупные touch targets;
 - понятные loading/empty/error states;
 - опасные действия визуально отделены.
+
+Интерфейс русифицирован: основные разделы, навигация, empty/error/loading states и формы используют русский язык. Английский оставлен для брендов сервисов и технических терминов вроде Docker/API.
 
 Изменения касаются UI/UX frontend. Backend endpoints и API-контракты v0.2.2 не менялись.
 
@@ -212,29 +216,30 @@ v0.2.3 обновляет frontend до визуального направле�
 - Управление qBittorrent: список торрентов, progress, скорости, ETA, pause/resume/delete, magnet и `.torrent` upload.
 - YouTube downloads: выбор video/audio, качества и формата, список последних файлов из `YOUTUBE_PATH`.
 - Файловый браузер по разрешённым папкам `media/music/torrents/youtube/books`.
-- Home dashboard: summary, активные торренты, последние загрузки, mini disk usage.
-- Admin tabs: Overview, Monitoring, Downloads, Files, Services, Events, Settings.
+- Главная страница: домашние группы сервисов, активные торренты, последние YouTube-загрузки, события и состояние диска.
+- В админке: состояние сервера, мониторинг, загрузки, файлы, сервисы, события и настройки.
 
 ## UI Refresh
 
-Интерфейс сделан mobile-first: на телефоне используется fixed bottom navigation с safe-area отступами, крупные tap targets и карточный layout без горизонтального overflow. На desktop используется единый dashboard-shell с боковой навигацией, ограниченной шириной контента и плотными техническими карточками для Admin Mode.
+Интерфейс сделан mobile-first: на телефоне используется нижняя glass-навигация с safe-area отступами, крупные tap targets и карточный layout без горизонтального overflow. На desktop используется боковая навигация, ограниченная ширина контента и крупные смысловые блоки для домашней панели и админки.
 
 Основные элементы дизайн-системы находятся во `frontend/src/styles.css`: CSS variables для цветов, радиусов, теней, spacing, состояний focus/hover/active, карточек, форм, tabs, progress bars, skeleton/error/empty states. Приложение не использует тяжёлый UI framework.
 
 ## Режимы интерфейса
 
-- **Home Mode** - главный экран для повседневного использования: крупные карточки фильмов, музыки, файлов, загрузок, YouTube, автоматизации и сервера.
-- **Admin Mode** - техническая панель: backend status, uptime, список сервисов, Monitoring, журнал событий и Telegram alerts.
+- **Главная** - главный экран для повседневного использования: группы “Фильмы и сериалы”, “Музыка”, “Загрузки”, “Файлы”, “Автоматизация” и “Администрирование”.
+- **Админка** - техническая панель: состояние API, время работы, список сервисов, мониторинг, журнал событий и уведомления Telegram.
 
-После ввода access token приложение открывает Home Mode по умолчанию.
+После ввода токена доступа приложение открывает главную страницу по умолчанию.
 
 ## Страницы
 
-- `/` - Home: домашний центр и быстрые действия.
-- `/actions` - Actions: формы `Скачать YouTube` и `Добавить magnet`.
-- `/files` - Files: быстрый файловый браузер для разрешённых папок.
-- `/admin` - Admin: техническая панель.
-- `/settings` - Settings: смена token, информация о backend, настройка открытия сервисов в текущем окне или новой вкладке.
+- `/` - Главная: домашняя панель сервисов и быстрые действия.
+- `/actions` - Действия: формы `Скачать YouTube`, `Добавить magnet` и загрузить `.torrent`.
+- `/downloads` - Загрузки: очередь qBittorrent и текущие скорости.
+- `/files` - Файлы: быстрый файловый браузер для разрешённых папок.
+- `/admin` - Админка: техническая панель.
+- `/settings` - Настройки: смена токена, информация об API, настройка открытия сервисов в текущем окне или новой вкладке.
 
 ## Сервисы
 
@@ -444,9 +449,9 @@ cp .env.example .env # только если env ещё не создан
 docker compose up -d --build
 ```
 
-## Monitoring и Telegram alerts
+## Мониторинг и Telegram alerts
 
-Admin Mode содержит вкладку `Monitoring`. Она показывает CPU, RAM, Swap, Disk, uptime, температуру, Docker containers, HTTP health сервисов и журнал событий. Раздел обновляется каждые 15 секунд только когда открыта вкладка Monitoring.
+Админка содержит вкладку `Мониторинг`. Она показывает CPU, RAM, Swap, диск, время работы, температуру, контейнеры Docker, HTTP health сервисов и журнал событий. Раздел обновляется каждые 15 секунд только когда открыта вкладка мониторинга.
 
 Чтобы включить Telegram alerts:
 
@@ -458,7 +463,7 @@ Admin Mode содержит вкладку `Monitoring`. Она показыва
 6. Возьмите `chat.id` из ответа и укажите его в `TELEGRAM_ADMIN_ID`.
 7. Убедитесь, что `ALERTS_ENABLED=true`.
 8. Перезапустите compose: `docker compose up -d --build`.
-9. В Admin -> Monitoring нажмите `Тест Telegram`.
+9. В Админка -> Мониторинг нажмите `Тест Telegram`.
 
 Если `TELEGRAM_BOT_TOKEN` или `TELEGRAM_ADMIN_ID` пустые, backend не падает, а UI показывает, что Telegram alerts не настроены.
 
@@ -498,9 +503,9 @@ Frontend получает список через `/api/services`. Поддер�
 
 1. Подключитесь к VPN AmneziaWG.
 2. Откройте `http://10.8.1.5:8091` или адрес, на который опубликован frontend.
-3. В браузере выберите установку приложения: Add to Home Screen / Install app.
+3. В браузере выберите установку приложения: “Добавить на экран Домой” / Install app.
 4. При первом запуске введите `HOME_APP_TOKEN`.
-5. В Settings можно выбрать, открывать сервисы в текущем окне PWA или в новой вкладке.
+5. В настройках можно выбрать, открывать сервисы в текущем окне PWA или в новой вкладке.
 
 ## Проверки разработки
 

@@ -51,15 +51,21 @@ export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh,
       <section className="panel file-control-panel">
         <div className="panel-header">
           <div>
-            <h2>File control</h2>
+            <h2>Файловый центр</h2>
             <p className="muted">Разрешённые корни, загрузка и безопасные действия.</p>
           </div>
           <span>{path}</span>
         </div>
         <div className="file-roots" aria-label="Разделы файлов">
-          {["media", "music", "torrents", "youtube", "books"].map((root) => (
+          {[
+            ["media", "Медиа"],
+            ["music", "Музыка"],
+            ["torrents", "Торренты"],
+            ["youtube", "YouTube"],
+            ["books", "Книги"]
+          ].map(([root, label]) => (
             <button key={root} type="button" className={path.split("/")[0] === root ? "active" : ""} onClick={() => onNavigate(root)}>
-              {root}
+              {label}
             </button>
           ))}
         </div>
@@ -87,7 +93,7 @@ export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh,
               </button>
               {item.type === "file" ? (
                 <button className="icon-link" type="button" onClick={() => void save(item)}>
-                  <Download size={17} />
+                  <Download size={17} aria-hidden="true" />
                 </button>
               ) : null}
               {data.allow_delete ? (

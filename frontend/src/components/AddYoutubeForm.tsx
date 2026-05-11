@@ -43,44 +43,44 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
   return (
     <form className="panel action-form action-card-primary" onSubmit={submit}>
       <div className="form-title-row">
-        <h2>YouTube Download</h2>
+        <h2>Скачать YouTube</h2>
         <span>MeTube</span>
       </div>
-      <p className="muted">Видео или аудио. Для audio формат `any` будет отправлен как `mp3`.</p>
-      <label htmlFor="youtube-url">URL</label>
+      <p className="muted">Видео или аудио. Если формат не выбран, сервер подберёт подходящий вариант.</p>
+      <label htmlFor="youtube-url">Ссылка на YouTube</label>
       <input id="youtube-url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://youtube.com/..." inputMode="url" />
       <div className="form-row">
         <label>
-          Тип
+          Тип загрузки
           <select value={downloadType} onChange={(event) => setDownloadType(event.target.value as "video" | "audio")}>
             <option value="video">Видео</option>
             <option value="audio">Аудио</option>
           </select>
-          <small>video для ролика, audio для музыки</small>
+          <small>Видео для ролика, аудио для музыки</small>
         </label>
         <label>
           Качество
           <select value={quality} onChange={(event) => setQuality(event.target.value)}>
-            <option value="best">best</option>
+            <option value="best">Лучшее</option>
             <option value="1080">1080</option>
             <option value="720">720</option>
             <option value="480">480</option>
           </select>
-          <small>best оставляет выбор backend</small>
+          <small>Лучшее оставляет выбор серверу</small>
         </label>
         <label>
           Формат
           <select value={format} onChange={(event) => setFormat(event.target.value)}>
-            <option value="any">any</option>
+            <option value="any">Авто</option>
             <option value="mp4">mp4</option>
             <option value="mp3">mp3</option>
           </select>
-          <small>mp4/mp3 или auto</small>
+          <small>mp4, mp3 или авто</small>
         </label>
       </div>
       {error ? <p className="inline-error">{error}</p> : null}
       <button type="submit" disabled={loading || !url.trim()}>
-        {loading ? "Отправка..." : "Отправить в MeTube"}
+        {loading ? "Отправка..." : "Скачать"}
       </button>
     </form>
   );

@@ -11,7 +11,7 @@ export function FileBreadcrumbs({ path, onNavigate }: FileBreadcrumbsProps) {
   }));
 
   return (
-    <nav className="file-breadcrumbs" aria-label="File breadcrumbs">
+    <nav className="file-breadcrumbs" aria-label="Путь к папке">
       {crumbs.map((crumb, index) => (
         <button key={crumb.path} type="button" onClick={() => onNavigate(crumb.path)}>
           {index > 0 ? "/ " : ""}

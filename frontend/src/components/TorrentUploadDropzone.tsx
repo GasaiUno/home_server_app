@@ -36,8 +36,8 @@ export function TorrentUploadDropzone({ token, onNotice, onUploaded }: TorrentUp
   return (
     <section className="panel action-form">
       <div className="form-title-row">
-        <h2>.torrent upload</h2>
-        <span>file</span>
+        <h2>Загрузить .torrent</h2>
+        <span>файл</span>
       </div>
       <p className="muted">Файл отправляется в qBittorrent без изменения текущего API.</p>
       <label className="dropzone">
@@ -48,7 +48,7 @@ export function TorrentUploadDropzone({ token, onNotice, onUploaded }: TorrentUp
       <input id="torrent-category" value={category} onChange={(event) => setCategory(event.target.value)} placeholder="telegram" />
       {error ? <p className="inline-error">{error}</p> : null}
       <button type="button" onClick={upload} disabled={loading || !file}>
-        {loading ? "Загрузка..." : "Отправить torrent"}
+        {loading ? "Загрузка..." : "Добавить торрент"}
       </button>
     </section>
   );

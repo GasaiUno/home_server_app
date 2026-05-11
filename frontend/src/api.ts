@@ -29,7 +29,7 @@ async function request<T>(path: string, token: string, options: RequestInit = {}
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed with status ${response.status}`);
+    throw new Error(text || `Запрос завершился ошибкой ${response.status}`);
   }
 
   return response.json() as Promise<T>;
@@ -125,7 +125,7 @@ export async function downloadFile(token: string, path: string): Promise<Blob> {
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed with status ${response.status}`);
+    throw new Error(text || `Запрос завершился ошибкой ${response.status}`);
   }
   return response.blob();
 }
@@ -178,7 +178,7 @@ async function uploadRequest<T>(path: string, token: string, body: FormData): Pr
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed with status ${response.status}`);
+    throw new Error(text || `Запрос завершился ошибкой ${response.status}`);
   }
   return response.json() as Promise<T>;
 }

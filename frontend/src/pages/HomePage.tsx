@@ -1,16 +1,28 @@
-import { Activity, Bell, Download, Film, Folder, HardDrive, Link2, Server, ShieldCheck, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getDashboardSummary, getTorrents, getYoutubeDownloads } from "../api";
-import { ActiveTorrentsWidget } from "../components/ActiveTorrentsWidget";
-import { DashboardSummaryCard } from "../components/DashboardSummaryCard";
-import { DiskUsageMiniWidget } from "../components/DiskUsageMiniWidget";
+import {
+  Activity,
+  Bell,
+  BookOpen,
+  Bot,
+  Download,
+  Film,
+  Folder,
+  HardDrive,
+  Link2,
+  Music,
+  Settings,
+  ShieldCheck,
+  Upload,
+  Zap
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { getAdminEvents, getDashboardSummary, getTorrents, getYoutubeDownloads } from "../api";
 import { QuickActionCard } from "../components/QuickActionCard";
-import { RecentDownloadsWidget } from "../components/RecentDownloadsWidget";
-import { ServiceCard } from "../components/ServiceCard";
 import { StatusBadge } from "../components/StatusBadge";
-import { BentoCard, MetricPill } from "../components/Surface";
-import type { DashboardSummary, ServiceItem, ServiceTarget, StatusResponse, TorrentItem, YoutubeDownloadItem } from "../types";
-import { formatSpeed, findServiceUrl } from "../utils";
+import { MetricPill } from "../components/Surface";
+import type { DashboardSummary, EventItem, ServiceItem, ServiceTarget, StatusResponse, TorrentItem, YoutubeDownloadItem } from "../types";
+import { findServiceUrl } from "../utils";
 
 type HomePageProps = {
   token: string;
@@ -20,144 +32,303 @@ type HomePageProps = {
   serviceTarget: ServiceTarget;
 };
 
+type ServiceGroup = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  accent: string;
+  services: string[];
+  actions: Array<{ label: string; to?: string; href?: string }>;
+};
+
+const serviceUrlFallbacks: Record<string, string> = {
+  prowlarr: "http://10.8.1.5:9696",
+  radarr: "http://10.8.1.5:7878",
+  sonarr: "http://10.8.1.5:8989"
+};
+
 export function HomePage({ token, services, status, loading, serviceTarget }: HomePageProps) {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [torrents, setTorrents] = useState<TorrentItem[]>([]);
   const [downloads, setDownloads] = useState<YoutubeDownloadItem[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
 
   useEffect(() => {
-    void Promise.allSettled([getDashboardSummary(token), getTorrents(token), getYoutubeDownloads(token)]).then((results) => {
+    void Promise.allSettled([getDashboardSummary(token), getTorrents(token), getYoutubeDownloads(token), getAdminEvents(token)]).then((results) => {
       if (results[0].status === "fulfilled") setSummary(results[0].value);
       if (results[1].status === "fulfilled") setTorrents(results[1].value.items);
       if (results[2].status === "fulfilled") setDownloads(results[2].value.items);
+      if (results[3].status === "fulfilled") setEvents(results[3].value.events);
     });
   }, [token]);
 
-  const primaryServices = services.filter((service) =>
-    ["jellyfin", "navidrome", "file-browser", "qbittorrent", "metube", "n8n"].includes(service.id)
-  );
-  const serverCard: ServiceItem = {
-    id: "server",
-    name: "Сервер",
-        description: "Статус, мониторинг и управление",
-    url: "/admin",
-    icon: "server",
-    accent: "slate",
-    category: "system"
+  const serviceUrl = (id: string) => {
+    const url = findServiceUrl(services, id);
+    return url === "#" ? (serviceUrlFallbacks[id] ?? "#") : url;
   };
   const activeTorrents = torrents.filter((torrent) => torrent.dlspeed > 0 || torrent.upspeed > 0);
-  const totalDownloadSpeed = torrents.reduce((total, torrent) => total + torrent.dlspeed, 0);
-  const totalUploadSpeed = torrents.reduce((total, torrent) => total + torrent.upspeed, 0);
-  const completedTorrents = torrents.filter((torrent) => torrent.progress >= 1).length;
   const onlineServices = summary?.services.online ?? 0;
   const offlineServices = summary?.services.offline ?? 0;
+  const serviceStatusText = offlineServices > 0 ? "есть проблемы" : onlineServices > 0 ? "всё работает" : "проверяем";
+  const serviceStatusTone = offlineServices > 0 ? "warning" : onlineServices > 0 ? "online" : "neutral";
+
+  const serviceGroups = useMemo<ServiceGroup[]>(
+    () => [
+      {
+        title: "Фильмы и сериалы",
+        description: "Смотреть медиатеку, управлять фильмами и сериалами.",
+        icon: Film,
+        accent: "violet",
+        services: ["Jellyfin", "Radarr", "Sonarr"],
+        actions: [
+          { label: "Открыть Jellyfin", href: serviceUrl("jellyfin") },
+          { label: "Фильмы", href: serviceUrl("radarr") || serviceUrl("jellyfin") },
+          { label: "Сериалы", href: serviceUrl("sonarr") || serviceUrl("jellyfin") }
+        ]
+      },
+      {
+        title: "Музыка",
+        description: "Слушать музыку с домашнего сервера.",
+        icon: Music,
+        accent: "teal",
+        services: ["Navidrome"],
+        actions: [{ label: "Открыть музыку", href: serviceUrl("navidrome") }]
+      },
+      {
+        title: "Загрузки",
+        description: "Торренты, YouTube-загрузки и индексаторы.",
+        icon: Download,
+        accent: "blue",
+        services: ["qBittorrent", "MeTube", "Prowlarr"],
+        actions: [
+          { label: "Торренты", href: serviceUrl("qbittorrent") },
+          { label: "YouTube", to: "/actions" },
+          { label: "Индексаторы", href: serviceUrl("prowlarr") || serviceUrl("qbittorrent") }
+        ]
+      },
+      {
+        title: "Файлы",
+        description: "Медиа, музыка, книги, YouTube, заметки и документы.",
+        icon: Folder,
+        accent: "amber",
+        services: ["File Browser"],
+        actions: [
+          { label: "Открыть файлы", to: "/files" },
+          { label: "Книги", to: "/files" },
+          { label: "Заметки", to: "/files" }
+        ]
+      },
+      {
+        title: "Автоматизация",
+        description: "Сценарии, уведомления и быстрые команды.",
+        icon: Bot,
+        accent: "rose",
+        services: ["n8n", "Telegram bot"],
+        actions: [
+          { label: "Открыть n8n", href: serviceUrl("n8n") },
+          { label: "События", to: "/admin" }
+        ]
+      },
+      {
+        title: "Администрирование",
+        description: "Состояние сервера, контейнеры, логи и обслуживание.",
+        icon: ShieldCheck,
+        accent: "slate",
+        services: ["Мониторинг", "Docker", "Сервисы", "События", "Настройки"],
+        actions: [
+          { label: "Мониторинг", to: "/admin" },
+          { label: "Админка", to: "/admin" }
+        ]
+      }
+    ],
+    [services]
+  );
 
   return (
     <>
-      <section className="home-hero control-hero">
+      <section className="home-hero home-server-hero">
         <div className="hero-copy">
-          <p className="section-label">Control Center</p>
-          <h1>Home Server</h1>
-          <p className="page-subtitle">Статус, медиа, файлы и загрузки в одном домашнем центре.</p>
+          <p className="section-label">панель дома</p>
+          <h1>Домашний сервер</h1>
+          <p className="page-subtitle">Фильмы, музыка, загрузки, файлы и автоматизация в одном месте.</p>
+          <div className="home-status-line" aria-label="Состояние сервера">
+            <StatusBadge state={serviceStatusTone} label={serviceStatusText} />
+            <span>{onlineServices || services.length} сервисов доступно</span>
+          </div>
           <div className="hero-metrics" aria-label="Краткие метрики">
             <MetricPill label="CPU" value={summary?.server.cpu_percent != null ? `${summary.server.cpu_percent}%` : "—"} />
             <MetricPill label="RAM" value={summary?.server.memory_percent != null ? `${summary.server.memory_percent}%` : "—"} />
-            <MetricPill label="Disk" value={summary?.server.disk_percent != null ? `${summary.server.disk_percent}%` : "—"} />
-            <MetricPill label="Active" value={activeTorrents.length} status={activeTorrents.length ? "success" : "neutral"} />
+            <MetricPill label="Диск" value={summary?.server.disk_percent != null ? `${summary.server.disk_percent}%` : "—"} />
+            <MetricPill label="Загрузки" value={activeTorrents.length} status={activeTorrents.length ? "success" : "neutral"} />
+          </div>
+          <div className="hero-actions">
+            <Link className="primary-link-button" to="/actions">
+              Скачать YouTube
+            </Link>
+            <Link className="secondary-button" to="/actions">
+              Добавить magnet
+            </Link>
+            <Link className="secondary-button" to="/files">
+              Открыть файлы
+            </Link>
           </div>
         </div>
-        <div className="hero-status-stack">
-          <StatusBadge status={status} loading={loading} />
-          <QuickActionCard title="Открыть мониторинг" description="CPU, RAM, Docker, alerts" icon={Activity} to="/admin" />
+        <div className="hero-service-strip" aria-label="Быстрые сервисы">
+          <HeroServiceLink title="Jellyfin" subtitle="Фильмы" href={serviceUrl("jellyfin")} target={serviceTarget} icon={Film} />
+          <HeroServiceLink title="Navidrome" subtitle="Музыка" href={serviceUrl("navidrome")} target={serviceTarget} icon={Music} />
+          <HeroServiceLink title="qBittorrent" subtitle="Торренты" href={serviceUrl("qbittorrent")} target={serviceTarget} icon={Download} />
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="section-heading">
+          <h2>Мои сервисы</h2>
+          <span>по задачам</span>
+        </div>
+        <div className="service-story-grid">
+          {serviceGroups.map((group) => (
+            <ServiceGroupCard key={group.title} group={group} target={serviceTarget} />
+          ))}
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="section-heading">
+          <h2>Сейчас происходит</h2>
+          <span>без таблиц</span>
+        </div>
+        <div className="activity-grid">
+          <ActivityCard
+            icon={Zap}
+            title="Активные торренты"
+            value={activeTorrents.length ? `${activeTorrents.length} в работе` : "нет активных"}
+            detail={activeTorrents[0]?.name ?? "Очередь qBittorrent спокойна"}
+            to="/downloads"
+          />
+          <ActivityCard
+            icon={Download}
+            title="Последние YouTube-загрузки"
+            value={downloads.length ? `${downloads.length} файлов` : "пока пусто"}
+            detail={downloads[0]?.name ?? "Новые ролики появятся здесь"}
+            to="/actions"
+          />
+          <ActivityCard
+            icon={Bell}
+            title="События"
+            value={events.length ? `${events.length} записей` : "нет событий"}
+            detail={events[0]?.message ?? "Предупреждений сейчас нет"}
+            to="/admin"
+          />
+          <ActivityCard
+            icon={HardDrive}
+            title="Свободное место"
+            value={summary?.server.disk_percent != null ? `${100 - summary.server.disk_percent}% свободно` : "—"}
+            detail={offlineServices > 0 ? `${offlineServices} сервисов требуют внимания` : "Сервисы выглядят доступными"}
+            to="/admin"
+          />
         </div>
       </section>
 
       <section className="home-section">
         <div className="section-heading">
           <h2>Быстрые действия</h2>
-          <span>частые сценарии</span>
+          <span>частые задачи</span>
         </div>
         <div className="quick-grid quick-grid-priority">
-          <QuickActionCard title="YouTube Download" description="Видео или аудио в MeTube" icon={Link2} to="/actions" />
-          <QuickActionCard title="Add Magnet" description="Передать в qBittorrent" icon={Download} to="/actions" />
-          <QuickActionCard title="Files" description="Открыть браузер файлов" icon={Folder} to="/files" />
-          <QuickActionCard title="Downloads" description="Торренты и очереди" icon={Zap} to="/downloads" />
-          <QuickActionCard title="Admin" description="Мониторинг и foundation" icon={ShieldCheck} to="/admin" />
-        </div>
-      </section>
-
-      <section className="home-section">
-        <div className="section-heading">
-          <h2>Live overview</h2>
-          <span>сейчас</span>
-        </div>
-        <div className="bento-grid">
-          <BentoCard
-            icon={Download}
-            title="Downloads"
-            description="Активные торренты и текущая скорость"
-            metric={
-              <div className="metric-cluster">
-                <MetricPill label="active" value={activeTorrents.length} status={activeTorrents.length ? "success" : "neutral"} />
-                <MetricPill label="down" value={formatSpeed(totalDownloadSpeed)} />
-                <MetricPill label="up" value={formatSpeed(totalUploadSpeed)} />
-              </div>
-            }
-          />
-          <BentoCard
-            icon={HardDrive}
-            title="Storage"
-            description="Заполненность основного диска"
-            metric={<MetricPill label="disk" value={summary?.server.disk_percent != null ? `${summary.server.disk_percent}%` : "—"} />}
-          />
-          <BentoCard
-            icon={Server}
-            title="Services"
-            description="Health summary"
-            metric={
-              <div className="metric-cluster">
-                <MetricPill label="online" value={onlineServices} status="success" />
-                <MetricPill label="offline" value={offlineServices} status={offlineServices ? "danger" : "neutral"} />
-              </div>
-            }
-          />
-          <BentoCard
-            icon={Bell}
-            title="Recent"
-            description="YouTube downloads and completed torrents"
-            metric={
-              <div className="metric-cluster">
-                <MetricPill label="youtube" value={downloads.length} />
-                <MetricPill label="done" value={completedTorrents} />
-              </div>
-            }
-          />
-        </div>
-      </section>
-
-      <DashboardSummaryCard summary={summary} />
-
-      <section className="home-widgets">
-        <ActiveTorrentsWidget torrents={activeTorrents} />
-        <RecentDownloadsWidget items={downloads} />
-        <DiskUsageMiniWidget summary={summary} />
-      </section>
-
-      <section className="home-section">
-        <div className="section-heading">
-          <h2>Service shortcuts</h2>
-          <span>{services.length ? `${services.length} подключено` : "загрузка"}</span>
-        </div>
-        <div className="home-services-grid">
-          {primaryServices.map((service) => (
-            <ServiceCard key={service.id} service={service} target={serviceTarget} />
-          ))}
-          <QuickActionCard title="Открыть файлы" description="File Browser" icon={Folder} href={findServiceUrl(services, "file-browser")} />
-          <QuickActionCard title="Открыть торренты" description="qBittorrent" icon={Download} href={findServiceUrl(services, "qbittorrent")} />
-          <QuickActionCard title="Открыть фильмы" description="Jellyfin" icon={Film} href={findServiceUrl(services, "jellyfin")} />
-          <ServiceCard service={serverCard} target="_self" toAdmin />
+          <QuickActionCard title="Скачать YouTube" description="Видео или аудио через MeTube" icon={Link2} to="/actions" />
+          <QuickActionCard title="Добавить magnet" description="Отправить в qBittorrent" icon={Download} to="/actions" />
+          <QuickActionCard title="Загрузить файл" description="Открыть файловый раздел" icon={Upload} to="/files" />
+          <QuickActionCard title="Открыть загрузки" description="Торренты и очередь" icon={Zap} to="/downloads" />
+          <QuickActionCard title="Открыть админку" description="Мониторинг и обслуживание" icon={Settings} to="/admin" />
+          <QuickActionCard title="Открыть книги" description="Раздел файлов" icon={BookOpen} to="/files" />
         </div>
       </section>
     </>
+  );
+}
+
+function HeroServiceLink({
+  title,
+  subtitle,
+  href,
+  target,
+  icon: Icon
+}: {
+  title: string;
+  subtitle: string;
+  href: string;
+  target: ServiceTarget;
+  icon: LucideIcon;
+}) {
+  return (
+    <a className="hero-service-link" href={href} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+      <Icon size={20} aria-hidden="true" />
+      <span>
+        <strong>{title}</strong>
+        <small>{subtitle}</small>
+      </span>
+    </a>
+  );
+}
+
+function ServiceGroupCard({ group, target }: { group: ServiceGroup; target: ServiceTarget }) {
+  const Icon = group.icon;
+  return (
+    <article className={`service-group-card service-group-${group.accent}`}>
+      <div className="service-group-head">
+        <span className="service-group-icon">
+          <Icon size={24} aria-hidden="true" />
+        </span>
+        <div>
+          <h3>{group.title}</h3>
+          <p>{group.description}</p>
+        </div>
+      </div>
+      <div className="service-chip-row">
+        {group.services.map((service) => (
+          <span key={service}>{service}</span>
+        ))}
+      </div>
+      <div className="service-group-actions">
+        {group.actions.map((action) =>
+          action.to ? (
+            <Link key={action.label} to={action.to}>
+              {action.label}
+            </Link>
+          ) : (
+            <a key={action.label} href={action.href} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+              {action.label}
+            </a>
+          )
+        )}
+      </div>
+    </article>
+  );
+}
+
+function ActivityCard({
+  icon: Icon,
+  title,
+  value,
+  detail,
+  to
+}: {
+  icon: LucideIcon;
+  title: string;
+  value: string;
+  detail: string;
+  to: string;
+}) {
+  return (
+    <Link className="activity-card" to={to}>
+      <span className="activity-icon">
+        <Icon size={20} aria-hidden="true" />
+      </span>
+      <span>
+        <small>{title}</small>
+        <strong>{value}</strong>
+        <em>{detail}</em>
+      </span>
+    </Link>
   );
 }

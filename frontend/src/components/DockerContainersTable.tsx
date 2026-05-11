@@ -8,7 +8,7 @@ export function DockerContainersTable({ containers }: DockerContainersTableProps
   return (
     <section className="panel table-panel">
       <div className="panel-header">
-        <h2>Docker containers</h2>
+        <h2>Контейнеры Docker</h2>
         <span>{containers.length}</span>
       </div>
       <div className="responsive-table">
@@ -17,9 +17,9 @@ export function DockerContainersTable({ containers }: DockerContainersTableProps
             <tr>
               <th>Контейнер</th>
               <th>Статус</th>
-              <th>Health</th>
-              <th>Restart</th>
-              <th>Started</th>
+              <th>Проверка</th>
+              <th>Рестарты</th>
+              <th>Запущен</th>
             </tr>
           </thead>
           <tbody>
@@ -32,14 +32,14 @@ export function DockerContainersTable({ containers }: DockerContainersTableProps
                 <tr key={container.name}>
                   <td>
                     <strong>{container.name}</strong>
-                    <small>{container.image ?? "image unknown"}</small>
+                    <small>{container.image ?? "образ неизвестен"}</small>
                   </td>
                   <td>
                     <StatusPill value={container.status} />
                   </td>
-                  <td>{container.health ?? "n/a"}</td>
+                  <td>{container.health ?? "нет данных"}</td>
                   <td>{container.restart_count ?? 0}</td>
-                  <td>{container.started_at ? new Date(container.started_at).toLocaleString("ru-RU") : "n/a"}</td>
+                  <td>{container.started_at ? new Date(container.started_at).toLocaleString("ru-RU") : "нет данных"}</td>
                 </tr>
               ))
             )}
@@ -52,5 +52,13 @@ export function DockerContainersTable({ containers }: DockerContainersTableProps
 
 function StatusPill({ value }: { value: string }) {
   const tone = value === "running" ? "normal" : value === "restarting" ? "warning" : "critical";
-  return <span className={`status-pill tone-${tone}`}>{value}</span>;
+  return <span className={`status-pill tone-${tone}`}>{statusLabel(value)}</span>;
+}
+
+function statusLabel(value: string): string {
+  if (value === "running") return "Работает";
+  if (value === "restarting") return "Перезапуск";
+  if (value === "exited") return "Остановлен";
+  if (value === "created") return "Создан";
+  return value || "Неизвестно";
 }

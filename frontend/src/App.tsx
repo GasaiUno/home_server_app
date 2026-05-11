@@ -40,7 +40,7 @@ export function App() {
     } catch (error) {
       setStatus(null);
       setServices([]);
-      setNotice({ type: "error", message: `Backend недоступен или token неверный: ${getErrorMessage(error)}` });
+      setNotice({ type: "error", message: `API недоступен или токен неверный: ${getErrorMessage(error)}` });
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export function App() {
     event.preventDefault();
     const nextToken = draftToken.trim();
     if (!nextToken) {
-      setNotice({ type: "error", message: "Введите access token" });
+      setNotice({ type: "error", message: "Введите токен доступа" });
       return;
     }
     localStorage.setItem(TOKEN_KEY, nextToken);
@@ -82,10 +82,10 @@ export function App() {
           <div className="brand-mark">
             <Server size={30} aria-hidden="true" />
           </div>
-          <h1>Home Server App</h1>
-          <p>Подключение к домашнему серверу</p>
+          <h1>Домашний сервер</h1>
+          <p>Подключение к панели управления</p>
           <form onSubmit={saveToken} className="auth-form">
-            <label htmlFor="token">Access token</label>
+            <label htmlFor="token">Введите токен доступа</label>
             <div className="input-row">
               <KeyRound size={18} aria-hidden="true" />
               <input
@@ -97,8 +97,8 @@ export function App() {
                 autoComplete="current-password"
               />
             </div>
-            <small className="auth-hint">Токен хранится локально в браузере и отправляется как X-Home-Token.</small>
-            <button type="submit">Connect</button>
+            <small className="auth-hint">Токен хранится только в этом браузере и отправляется как X-Home-Token.</small>
+            <button type="submit">Подключиться</button>
           </form>
           {notice ? <p className={`notice ${notice.type}`}>{notice.message}</p> : null}
         </section>

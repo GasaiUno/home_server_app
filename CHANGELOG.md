@@ -6,13 +6,13 @@
 - New Dark Liquid Control visual direction.
 - Refined mobile-first app shell.
 - Glass-style bottom navigation.
-- Bento-style dashboard sections.
+- Bento-style service sections.
 - Improved page headers and status cards.
 - More polished loading, empty and error states.
 - Better responsive layouts for mobile and desktop.
 
 ### Improved
-- Home screen hierarchy.
+- Home screen service hierarchy.
 - Actions page clarity.
 - Downloads readability.
 - Files browsing UX.
@@ -25,6 +25,17 @@
 - Updated UI styling and component system.
 - Reduced generic admin-panel feeling.
 - Improved consistency across pages.
+- Rebuilt Home page around actual home server services.
+- Replaced generic dashboard layout with service-oriented home cockpit.
+- Localized main UI labels to Russian.
+- Reworked navigation labels.
+- Reworked Home service groups:
+  - Фильмы и сериалы;
+  - Музыка;
+  - Загрузки;
+  - Файлы;
+  - Автоматизация;
+  - Администрирование.
 
 ## v0.2.2
 

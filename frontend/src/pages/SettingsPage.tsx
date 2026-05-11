@@ -13,24 +13,24 @@ type SettingsPageProps = {
 export function SettingsPage({ status, serviceTarget, onTargetChange, onChangeToken }: SettingsPageProps) {
   return (
     <>
-      <PageHeader kicker="Настройки" title="Settings" subtitle="Token, backend и поведение открытия сервисов." />
+      <PageHeader kicker="параметры панели" title="Настройки" subtitle="Токен, API и поведение открытия сервисов." />
       <section className="settings-grid">
         <article className="panel settings-card">
           <KeyRound size={24} aria-hidden="true" />
-          <h2>Access token</h2>
-          <p className="muted">Token хранится только в localStorage браузера и отправляется как X-Home-Token.</p>
+          <h2>Токен доступа</h2>
+          <p className="muted">Токен хранится только в localStorage браузера и отправляется как X-Home-Token.</p>
           <button className="secondary-button" type="button" onClick={onChangeToken}>
-            Сменить token
+            Сменить токен
           </button>
         </article>
 
         <article className="panel settings-card">
           <Server size={24} aria-hidden="true" />
-          <h2>Backend</h2>
+          <h2>API</h2>
           <dl className="settings-list">
             <div>
               <dt>Статус</dt>
-              <dd>{status?.status ?? "unknown"}</dd>
+              <dd>{status?.status === "ok" ? "работает" : status?.status ?? "неизвестно"}</dd>
             </div>
             <div>
               <dt>Версия</dt>

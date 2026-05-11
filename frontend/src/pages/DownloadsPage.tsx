@@ -22,7 +22,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
       const payload = await getTorrents(token);
       setTorrents(payload.items);
     } catch (error) {
-      onNotice({ type: "error", message: `Не удалось загрузить downloads: ${getErrorMessage(error)}` });
+      onNotice({ type: "error", message: `Не удалось загрузить список загрузок: ${getErrorMessage(error)}` });
     } finally {
       setLoading(false);
     }
@@ -39,7 +39,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
     try {
       if (action === "pause") await pauseTorrent(token, hash);
       else await resumeTorrent(token, hash);
-      onNotice({ type: "success", message: action === "pause" ? "Torrent paused" : "Torrent resumed" });
+      onNotice({ type: "success", message: action === "pause" ? "Торрент поставлен на паузу" : "Торрент продолжен" });
       await loadTorrents();
     } catch (error) {
       onNotice({ type: "error", message: `Действие не выполнено: ${getErrorMessage(error)}` });
@@ -53,7 +53,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
     setLoading(true);
     try {
       await deleteTorrent(token, pendingDelete.hash, false);
-      onNotice({ type: "success", message: "Torrent удалён из списка" });
+      onNotice({ type: "success", message: "Торрент удалён из списка" });
       setPendingDelete(null);
       await loadTorrents();
     } catch (error) {
@@ -65,7 +65,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
 
   return (
     <>
-      <PageHeader kicker="Downloads" title="Загрузки" subtitle="Очередь qBittorrent, скорости, прогресс и безопасные действия." />
+      <PageHeader kicker="очередь сервера" title="Загрузки" subtitle="Торренты, YouTube и текущая очередь." />
       <TorrentTable
         torrents={torrents}
         loading={loading}
@@ -75,7 +75,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
       />
       {pendingDelete ? (
         <ConfirmDialog
-          title="Удалить torrent?"
+          title="Удалить торрент?"
           text={`Удалить "${pendingDelete.name}" из qBittorrent? Файлы останутся на диске.`}
           confirmLabel="Удалить"
           onCancel={() => setPendingDelete(null)}

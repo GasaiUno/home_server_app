@@ -23,20 +23,20 @@ export function TorrentTable({ torrents, loading, onPause, onResume, onDelete }:
     <section className="panel table-panel downloads-panel">
       <div className="panel-header">
         <div>
-          <h2>Downloads</h2>
-          <p className="muted">qBittorrent queue, progress and compact actions.</p>
+          <h2>Текущая очередь</h2>
+          <p className="muted">qBittorrent: прогресс, скорость и компактные действия.</p>
         </div>
         <span>{torrents.length}</span>
       </div>
       <div className="download-summary">
-        <MetricPill label="active" value={active} status={active ? "success" : "neutral"} />
-        <MetricPill label="down" value={formatSpeed(downSpeed)} />
-        <MetricPill label="up" value={formatSpeed(upSpeed)} />
-        <MetricPill label="done" value={completed} />
+        <MetricPill label="Активные" value={active} status={active ? "success" : "neutral"} />
+        <MetricPill label="Загрузка" value={formatSpeed(downSpeed)} />
+        <MetricPill label="Отдача" value={formatSpeed(upSpeed)} />
+        <MetricPill label="Завершённые" value={completed} />
       </div>
       {loading && torrents.length === 0 ? <SkeletonCard lines={4} /> : null}
       {!loading && torrents.length === 0 ? (
-        <EmptyState icon={Inbox} title="Загрузок нет" description="Очередь пуста или qBittorrent сейчас недоступен." />
+        <EmptyState icon={Inbox} title="Нет активных загрузок" description="Очередь пуста или qBittorrent сейчас недоступен." />
       ) : null}
       <div className="responsive-table">
         <table className={torrents.length === 0 ? "is-empty" : ""}>
@@ -46,7 +46,7 @@ export function TorrentTable({ torrents, loading, onPause, onResume, onDelete }:
               <th>Статус</th>
               <th>Прогресс</th>
               <th>Скорость</th>
-              <th>ETA</th>
+              <th>Осталось</th>
               <th>Категория</th>
               <th>Действия</th>
             </tr>
@@ -59,7 +59,7 @@ export function TorrentTable({ torrents, loading, onPause, onResume, onDelete }:
                     <small>{formatBytes(torrent.size)}</small>
                   </td>
                   <td>
-                    <span className={`status-pill torrent-state ${torrentStateTone(torrent.state)}`}>{torrent.state}</span>
+                    <span className={`status-pill torrent-state ${torrentStateTone(torrent.state)}`}>{torrentStateLabel(torrent.state)}</span>
                   </td>
                   <td>
                     <TorrentProgress value={torrent.progress} />
@@ -95,4 +95,15 @@ function torrentStateTone(state: string): string {
   if (normalized.includes("pause") || normalized.includes("stalled")) return "tone-warning";
   if (normalized.includes("down") || normalized.includes("up") || normalized.includes("check")) return "tone-success";
   return "tone-neutral";
+}
+
+function torrentStateLabel(state: string): string {
+  const normalized = state.toLowerCase();
+  if (normalized.includes("pause")) return "Пауза";
+  if (normalized.includes("down")) return "Загрузка";
+  if (normalized.includes("up")) return "Раздача";
+  if (normalized.includes("stalled")) return "Ожидание";
+  if (normalized.includes("error") || normalized.includes("missing")) return "Ошибка";
+  if (normalized.includes("check")) return "Проверка";
+  return state || "Неизвестно";
 }

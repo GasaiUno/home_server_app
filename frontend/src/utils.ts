@@ -60,7 +60,7 @@ export function healthTone(percent: number | null | undefined): "normal" | "warn
 
 export function formatServerTime(value?: string): string {
   if (!value) {
-    return "unknown";
+    return "неизвестно";
   }
   return new Intl.DateTimeFormat("ru-RU", {
     hour: "2-digit",

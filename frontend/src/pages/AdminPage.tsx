@@ -52,13 +52,13 @@ type AdminPageProps = {
 };
 
 const tabs: { id: AdminTab; label: string }[] = [
-  { id: "overview", label: "Overview" },
-  { id: "monitoring", label: "Monitoring" },
-  { id: "downloads", label: "Downloads" },
-  { id: "files", label: "Files" },
-  { id: "services", label: "Services" },
-  { id: "events", label: "Events" },
-  { id: "settings", label: "Settings" }
+  { id: "overview", label: "Состояние сервера" },
+  { id: "monitoring", label: "Мониторинг" },
+  { id: "downloads", label: "Загрузки" },
+  { id: "files", label: "Файлы" },
+  { id: "services", label: "Сервисы" },
+  { id: "events", label: "События" },
+  { id: "settings", label: "Настройки" }
 ];
 
 export function AdminPage({ token, services, status, loading, onRefresh, onNotice }: AdminPageProps) {
@@ -126,7 +126,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
       const payload = await getAdminServicesRegistry(token);
       setRegistry(payload.services);
     } catch (error) {
-      onNotice({ type: "error", message: `Не удалось загрузить registry: ${getErrorMessage(error)}` });
+      onNotice({ type: "error", message: `Не удалось загрузить список разрешённых сервисов: ${getErrorMessage(error)}` });
     } finally {
       setRegistryLoading(false);
     }
@@ -192,7 +192,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     try {
       if (action === "pause") await pauseTorrent(token, hash);
       else await resumeTorrent(token, hash);
-      onNotice({ type: "success", message: action === "pause" ? "Torrent paused" : "Torrent resumed" });
+      onNotice({ type: "success", message: action === "pause" ? "Торрент поставлен на паузу" : "Торрент продолжен" });
       await loadTorrents();
     } catch (error) {
       onNotice({ type: "error", message: `Действие не выполнено: ${getErrorMessage(error)}` });
@@ -206,11 +206,11 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     setTorrentLoading(true);
     try {
       await deleteTorrent(token, pendingDelete.hash, false);
-      onNotice({ type: "success", message: "Torrent удалён из списка" });
+      onNotice({ type: "success", message: "Торрент удалён из списка" });
       setPendingDelete(null);
       await loadTorrents();
     } catch (error) {
-      onNotice({ type: "error", message: `Не удалось удалить torrent: ${getErrorMessage(error)}` });
+      onNotice({ type: "error", message: `Не удалось удалить торрент: ${getErrorMessage(error)}` });
     } finally {
       setTorrentLoading(false);
     }
@@ -224,7 +224,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
       const payload = await getAdminServiceLogs(token, service.key, 200);
       setLogs(payload.logs);
     } catch (error) {
-      onNotice({ type: "error", message: `Не удалось открыть logs: ${getErrorMessage(error)}` });
+      onNotice({ type: "error", message: `Не удалось открыть логи: ${getErrorMessage(error)}` });
     } finally {
       setLogsLoading(false);
     }
@@ -233,7 +233,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
   return (
     <>
       <div className="admin-header-row">
-        <PageHeader kicker="Admin Mode" title="Админ-панель" subtitle="Технический статус, мониторинг и webhook-действия." />
+        <PageHeader kicker="обслуживание" title="Админка" subtitle="Мониторинг, сервисы, события и настройки сервера." />
         <button
           className="icon-button"
           type="button"
@@ -257,7 +257,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
         </button>
       </div>
 
-      <div className="admin-tabs" role="tablist" aria-label="Admin sections">
+      <div className="admin-tabs" role="tablist" aria-label="Разделы админки">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -309,11 +309,11 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
       ) : activeTab === "events" ? (
         <EventsTimeline events={events} />
       ) : (
-        <AdminLinkPanel title="Settings" text="Token и режим открытия сервисов находятся в общей странице Settings." link="/settings" label="Открыть Settings" />
+        <AdminLinkPanel title="Настройки" text="Токен и режим открытия сервисов находятся на общей странице настроек." link="/settings" label="Открыть настройки" />
       )}
       {pendingDelete ? (
         <ConfirmDialog
-          title="Удалить torrent?"
+          title="Удалить торрент?"
           text={`Удалить "${pendingDelete.name}" из qBittorrent? Файлы останутся на диске.`}
           confirmLabel="Удалить"
           onCancel={() => setPendingDelete(null)}
@@ -322,10 +322,10 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
       ) : null}
       {logsService ? (
         <div className="dialog-backdrop" role="presentation">
-          <section className="confirm-dialog service-logs-dialog" role="dialog" aria-modal="true" aria-label={`${logsService.display_name} logs`}>
-            <h2>{logsService.display_name} logs</h2>
+          <section className="confirm-dialog service-logs-dialog" role="dialog" aria-modal="true" aria-label={`Логи ${logsService.display_name}`}>
+            <h2>Логи {logsService.display_name}</h2>
             <p className="muted">{logsLoading ? "Загрузка..." : `${logs.length} строк, только чтение`}</p>
-            <pre className="logs-pre">{logs.length ? logs.join("\n") : "No logs"}</pre>
+            <pre className="logs-pre">{logs.length ? logs.join("\n") : "Логов нет"}</pre>
             <div className="dialog-actions">
               <button type="button" className="secondary-muted-button" onClick={() => setLogsService(null)}>
                 Закрыть
@@ -355,12 +355,12 @@ function ServicesFoundationPanel({
       <section className="panel services-panel">
         <div className="panel-header">
           <div>
-            <h2>v0.3 foundation</h2>
-            <p className="muted">Whitelist, logs-only access, no service actions.</p>
+            <h2>Разрешённые сервисы</h2>
+            <p className="muted">Whitelist для будущего управления: сейчас доступны только безопасные логи.</p>
           </div>
           <span>{loading ? "..." : services.length}</span>
         </div>
-        {services.length === 0 ? <p className="muted">{loading ? "Загрузка registry..." : "Registry empty"}</p> : null}
+        {services.length === 0 ? <p className="muted">{loading ? "Загрузка списка..." : "Список пуст"}</p> : null}
         <div className="admin-services-grid registry-grid">
           {services.map((service) => {
             const serviceHealth = healthById.get(service.key);
@@ -370,22 +370,22 @@ function ServicesFoundationPanel({
                   <strong>{service.display_name}</strong>
                   <small className="mono-text">{service.container_name}</small>
                   <small>
-                    {service.category} / danger: {service.danger_level}
+                    {service.category} / риск: {dangerLabel(service.danger_level)}
                   </small>
                   <small>
-                    actions: {allowedActions(service)}
-                    {serviceHealth ? ` / ${serviceHealth.online ? "online" : "offline"}` : ""}
+                    разрешено: {allowedActions(service)}
+                    {serviceHealth ? ` / ${serviceHealth.online ? "работает" : "недоступен"}` : ""}
                   </small>
                 </span>
                 <div className="registry-actions">
                   {service.url ? (
-                    <a className="icon-button" href={service.url} target="_blank" rel="noreferrer" aria-label={`Open ${service.display_name}`}>
+                    <a className="icon-button" href={service.url} target="_blank" rel="noreferrer" aria-label={`Открыть ${service.display_name}`}>
                       <ExternalLink size={17} aria-hidden="true" />
                     </a>
                   ) : null}
                   {service.allow_logs ? (
                     <button type="button" className="secondary-muted-button compact-button" onClick={() => onViewLogs(service)}>
-                      Logs
+                      Логи
                     </button>
                   ) : null}
                 </div>
@@ -401,23 +401,29 @@ function ServicesFoundationPanel({
 
 function allowedActions(service: AdminRegistryService): string {
   return [
-    service.allow_logs ? "logs" : null,
-    service.allow_restart ? "restart" : null,
-    service.allow_start ? "start" : null,
-    service.allow_stop ? "stop" : null
+    service.allow_logs ? "логи" : null,
+    service.allow_restart ? "перезапуск" : null,
+    service.allow_start ? "запуск" : null,
+    service.allow_stop ? "остановка" : null
   ]
     .filter(Boolean)
     .join(", ");
+}
+
+function dangerLabel(level: AdminRegistryService["danger_level"]): string {
+  if (level === "low") return "низкий";
+  if (level === "medium") return "средний";
+  return "высокий";
 }
 
 function OverviewTab({ services, status, loading }: { services: ServiceItem[]; status: StatusResponse | null; loading: boolean }) {
   return (
     <>
       <section className="status-grid" aria-label="Статус сервера">
-        <StatusTile icon={Activity} label="Backend" value={status?.status ?? (loading ? "loading" : "unknown")} />
-        <StatusTile icon={Gauge} label="Uptime" value={status ? formatUptime(status.uptime_seconds) : "unknown"} />
-        <StatusTile icon={Server} label="Version" value={status?.version ?? "0.2.3"} />
-        <StatusTile icon={Clock3} label="Server time" value={formatServerTime(status?.server_time)} />
+        <StatusTile icon={Activity} label="API" value={status?.status === "ok" ? "работает" : loading ? "загрузка" : "неизвестно"} />
+        <StatusTile icon={Gauge} label="Время работы" value={status ? formatUptime(status.uptime_seconds) : "неизвестно"} />
+        <StatusTile icon={Server} label="Версия" value={status?.version ?? "0.2.3"} />
+        <StatusTile icon={Clock3} label="Время сервера" value={formatServerTime(status?.server_time)} />
       </section>
 
       <section className="content-grid">
@@ -443,9 +449,9 @@ function OverviewTab({ services, status, loading }: { services: ServiceItem[]; s
         <section className="forms-column">
           <AdminLinkPanel
             title="Webhook-действия"
-            text="Формы скачивания перенесены в отдельную страницу Actions и используют те же endpoints."
+            text="Формы скачивания находятся на странице Действия и используют те же endpoints."
             link="/actions"
-            label="Открыть Actions"
+            label="Открыть действия"
           />
         </section>
       </section>

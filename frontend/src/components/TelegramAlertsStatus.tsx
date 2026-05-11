@@ -12,13 +12,13 @@ export function TelegramAlertsStatus({ telegram }: TelegramAlertsStatusProps) {
         <Send size={21} aria-hidden="true" />
       </span>
       <div>
-        <h2>Telegram alerts</h2>
+        <h2>Уведомления Telegram</h2>
         <p className="muted">
           {telegram?.configured
             ? telegram.enabled
               ? "Уведомления включены и настроены."
-              : "Telegram настроен, но alerts отключены."
-            : "Telegram alerts не настроены. Добавьте TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_ID."}
+              : "Telegram настроен, но уведомления отключены."
+            : "Уведомления Telegram не настроены. Добавьте TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_ID."}
         </p>
       </div>
     </section>

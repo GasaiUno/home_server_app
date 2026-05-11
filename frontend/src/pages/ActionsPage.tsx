@@ -13,9 +13,9 @@ export function ActionsPage({ token, onNotice }: ActionsPageProps) {
   return (
     <>
       <PageHeader
-        kicker="Control actions"
+        kicker="быстрый запуск"
         title="Действия"
-        subtitle="Две основные точки входа: YouTube download и torrent flow."
+        subtitle="Быстро отправить ссылку на загрузку или добавить торрент."
       />
       <section className="forms-layout actions-v2">
         <AddYoutubeForm token={token} onNotice={onNotice} />

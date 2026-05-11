@@ -8,7 +8,7 @@ export function ServicesHealthTable({ services }: ServicesHealthTableProps) {
   return (
     <section className="panel table-panel">
       <div className="panel-header">
-        <h2>HTTP services</h2>
+        <h2>Проверка сервисов</h2>
         <span>{services.length}</span>
       </div>
       <div className="health-list">
@@ -19,7 +19,7 @@ export function ServicesHealthTable({ services }: ServicesHealthTableProps) {
               <strong>{service.name}</strong>
               <small>{service.checked_url}</small>
             </div>
-            <span>{service.status_code ?? "offline"}</span>
+            <span>{service.status_code ?? "недоступен"}</span>
             <span>{service.response_time_ms ?? 0} ms</span>
           </article>
         ))}

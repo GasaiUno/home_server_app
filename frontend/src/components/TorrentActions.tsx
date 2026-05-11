@@ -10,13 +10,13 @@ type TorrentActionsProps = {
 export function TorrentActions({ loading, onPause, onResume, onDelete }: TorrentActionsProps) {
   return (
     <div className="torrent-actions">
-      <button type="button" onClick={onPause} disabled={loading} title="Pause">
+      <button type="button" onClick={onPause} disabled={loading} title="Пауза" aria-label="Пауза">
         <Pause size={16} aria-hidden="true" />
       </button>
-      <button type="button" onClick={onResume} disabled={loading} title="Resume">
+      <button type="button" onClick={onResume} disabled={loading} title="Продолжить" aria-label="Продолжить">
         <Play size={16} aria-hidden="true" />
       </button>
-      <button type="button" onClick={onDelete} disabled={loading} title="Delete">
+      <button type="button" onClick={onDelete} disabled={loading} title="Удалить" aria-label="Удалить">
         <Trash2 size={16} aria-hidden="true" />
       </button>
     </div>

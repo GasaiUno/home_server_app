@@ -36,17 +36,17 @@ export function AddMagnetForm({ token, onNotice, onAdded }: AddMagnetFormProps) 
   return (
     <form className="panel action-form action-card-primary" onSubmit={submit}>
       <div className="form-title-row">
-        <h2>Magnet / Torrent</h2>
+        <h2>Добавить magnet</h2>
         <span>qBittorrent</span>
       </div>
-      <p className="muted">Magnet link уйдёт в qBittorrent. Категория необязательна.</p>
-      <label htmlFor="magnet-url">Magnet URL</label>
+      <p className="muted">Magnet-ссылка уйдёт в qBittorrent. Категория необязательна.</p>
+      <label htmlFor="magnet-url">Magnet-ссылка</label>
       <input id="magnet-url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="magnet:?xt=urn:btih:..." />
       <label htmlFor="magnet-category">Категория</label>
       <input id="magnet-category" value={category} onChange={(event) => setCategory(event.target.value)} placeholder="telegram" />
       {error ? <p className="inline-error">{error}</p> : null}
       <button type="submit" disabled={loading || !url.trim()}>
-        {loading ? "Добавление..." : "Добавить в qBittorrent"}
+        {loading ? "Добавление..." : "Добавить торрент"}
       </button>
     </form>
   );

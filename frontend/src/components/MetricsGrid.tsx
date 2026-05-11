@@ -18,7 +18,7 @@ export function MetricsGrid({ metrics }: MetricsGridProps) {
       <MetricCard
         title="CPU"
         value={metrics.cpu.percent}
-        details={`Load: ${metrics.cpu.load_avg?.join(" / ") ?? "недоступно"} · ${metrics.cpu.cores_logical ?? "?"} потоков`}
+        details={`Нагрузка: ${metrics.cpu.load_avg?.join(" / ") ?? "недоступно"} · ${metrics.cpu.cores_logical ?? "?"} потоков`}
         icon={Cpu}
       />
       <MetricCard
@@ -36,21 +36,21 @@ export function MetricsGrid({ metrics }: MetricsGridProps) {
       <MetricCard
         title="Температура"
         value={metrics.temperature.cpu}
-        details={metrics.temperature.available ? "CPU sensor" : "Температура недоступна"}
+        details={metrics.temperature.available ? "Датчик CPU" : "Температура недоступна"}
         icon={Thermometer}
         suffix="°C"
       />
-      <DiskUsageCard title="Disk /" usage={metrics.disk.root} />
-      {metrics.disk.data ? <DiskUsageCard title="Data path" usage={metrics.disk.data} path={metrics.disk.data.path} /> : null}
+      <DiskUsageCard title="Диск /" usage={metrics.disk.root} />
+      {metrics.disk.data ? <DiskUsageCard title="Данные" usage={metrics.disk.data} path={metrics.disk.data.path} /> : null}
       <article className="metric-card">
         <div className="metric-card-head">
           <span className="metric-icon">
             <Server size={21} aria-hidden="true" />
           </span>
-          <span>Uptime сервера</span>
+          <span>Время работы сервера</span>
         </div>
         <strong>{metrics.uptime.server_uptime_seconds ? formatUptime(metrics.uptime.server_uptime_seconds) : "Недоступно"}</strong>
-        <small>Backend: {formatUptime(metrics.uptime.backend_uptime_seconds)}</small>
+        <small>API: {formatUptime(metrics.uptime.backend_uptime_seconds)}</small>
       </article>
       <article className="metric-card">
         <div className="metric-card-head">
@@ -60,7 +60,7 @@ export function MetricsGrid({ metrics }: MetricsGridProps) {
           <span>Время</span>
         </div>
         <strong>{formatServerTime(metrics.uptime.server_time)}</strong>
-        <small>Backend стартовал: {formatServerTime(metrics.uptime.backend_started_at)}</small>
+        <small>API стартовал: {formatServerTime(metrics.uptime.backend_started_at)}</small>
       </article>
     </section>
   );
