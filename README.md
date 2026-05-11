@@ -1,4 +1,4 @@
-# Home Server App v0.2.1
+# Home Server App v0.2.2
 
 Home Server App — лёгкая PWA-панель для домашнего сервера за VPN. Приложение объединяет пользовательский Home Mode и Admin Mode: медиа, файлы, загрузки, мониторинг, сервисы, события и настройки.
 
@@ -6,7 +6,7 @@ Frontend открывается на `8091`, backend API на `8090`.
 
 ## Текущий статус
 
-Реализована версия v0.2.1.
+Реализована версия v0.2.2.
 
 - PWA frontend на React/Vite/TypeScript;
 - FastAPI backend;
@@ -29,7 +29,10 @@ Frontend открывается на `8091`, backend API на `8090`.
 - skeleton loading;
 - toast notifications;
 - empty/error states;
-- responsive layout для телефона и desktop.
+- responsive layout для телефона и desktop;
+- admin service whitelist foundation;
+- audit log helper;
+- Docker logs foundation для разрешённых сервисов.
 
 ## Roadmap
 
@@ -78,6 +81,16 @@ Frontend открывается на `8091`, backend API на `8090`.
 - error states
 - responsive tables/cards
 - unified design system
+
+### v0.2.2 — security/stability foundation
+
+- admin service whitelist foundation
+- unified API response helpers for new admin endpoints
+- audit log helper
+- confirmation model
+- safe service registry
+- Docker logs foundation
+- backend tests for admin service permissions
 
 ### v0.3 — media overview and service control
 
@@ -132,6 +145,35 @@ Frontend открывается на `8091`, backend API на `8090`.
 - audit log;
 - запрет произвольных Docker-команд;
 - запрет управления неизвестными контейнерами.
+
+## Что нового в v0.2.2
+
+v0.2.2 — security/stability foundation перед v0.3. Версия добавляет безопасную backend-основу для будущего Docker service control, logs viewer, task history и audit log без изменения текущих функций v0.2.1.
+
+- Admin service whitelist: backend принимает только ключи из `ADMIN_SERVICES`, а `container_name` всегда берётся из whitelist.
+- Единый формат ответов для новых admin foundation endpoints: `{ "ok": true, "data": ... }` и `{ "ok": false, "error": ... }`.
+- Audit log foundation пишет события admin-действий в `backend/app_data/audit.jsonl`.
+- Confirmation model подготовлен для будущих dangerous actions.
+- Docker logs foundation возвращает только последние строки логов разрешённых контейнеров.
+- Нет произвольных Docker-команд, `docker exec`, `docker prune`, update images или удаления контейнеров.
+- Неизвестные контейнеры отклоняются.
+- `homeapp-backend` защищён: stop/start/restart через API запрещены.
+
+## v0.2.2 — Admin security foundation
+
+Основа Admin security в v0.2.2:
+
+- service whitelist для будущего управления Docker services;
+- API response format для новых endpoints;
+- audit log foundation;
+- confirmation model;
+- Docker logs foundation;
+- no arbitrary Docker commands;
+- no unknown containers;
+- no `docker exec`/`prune`/`update`/`remove`;
+- `homeapp-backend` protected.
+
+Даже если `docker.sock` смонтирован read-only, доступ к Docker API остаётся чувствительным. Приложение должно быть доступно только через VPN/защищённый доступ и сильный `HOME_APP_TOKEN`.
 
 ## Что нового в v0.2
 
@@ -250,7 +292,7 @@ Backend в Docker получает read-only mounts для host metrics:
 - `/home/igor/server/youtube:/data/youtube`
 - `/home/igor/server/books:/data/books`
 
-Предупреждение: доступ к `docker.sock` даёт backend большие права на Docker host. Держите приложение доступным только через VPN и защищайте сильным `HOME_APP_TOKEN`.
+Предупреждение: доступ к `docker.sock` даёт backend большие права на Docker host. Даже read-only mount остаётся чувствительным доступом к Docker API. Держите приложение доступным только через VPN/защищённый доступ и защищайте сильным `HOME_APP_TOKEN`.
 
 Открыть:
 
@@ -267,6 +309,9 @@ Backend в Docker получает read-only mounts для host metrics:
 - `GET /api/admin/metrics` - требует `X-Home-Token`.
 - `GET /api/admin/docker` - требует `X-Home-Token`.
 - `GET /api/admin/services-health` - требует `X-Home-Token`.
+- `GET /api/admin/services-registry` - требует `X-Home-Token`, возвращает whitelist admin services.
+- `GET /api/admin/services-registry/{name}` - требует `X-Home-Token`, возвращает один сервис из whitelist.
+- `GET /api/admin/services-registry/{name}/logs?tail=200` - требует `X-Home-Token`, возвращает последние строки логов разрешённого контейнера.
 - `GET /api/admin/events` - требует `X-Home-Token`.
 - `POST /api/admin/alerts/test` - требует `X-Home-Token`.
 - `GET /api/dashboard/summary` - требует `X-Home-Token`.
@@ -296,6 +341,16 @@ curl -H "X-Home-Token: change-me" http://localhost:8090/api/dashboard/summary
 curl -H "X-Home-Token: change-me" http://localhost:8090/api/torrents
 curl -H "X-Home-Token: change-me" http://localhost:8090/api/youtube/downloads
 curl -H "X-Home-Token: change-me" "http://localhost:8090/api/files?path=media"
+```
+
+Проверка v0.2.2 admin foundation:
+
+```bash
+curl -H "X-Home-Token: change-me" \
+  http://localhost:8090/api/admin/services-registry
+
+curl -H "X-Home-Token: change-me" \
+  "http://localhost:8090/api/admin/services-registry/jellyfin/logs?tail=50"
 ```
 
 ## qBittorrent

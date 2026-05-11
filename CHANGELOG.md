@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.2
+
+### Added
+- Admin service whitelist foundation.
+- Unified API response helpers for new admin endpoints.
+- Audit log helper for admin actions.
+- Confirmation model for dangerous actions.
+- Safe service registry for future Docker service control.
+- Basic backend tests for admin service permissions.
+
+### Improved
+- Security model for future Docker actions.
+- Documentation around docker.sock risk.
+- Preparation for v0.3 service logs and safe restart/start/stop.
+
+### Security
+- Future Docker actions are restricted to a whitelist.
+- Unknown services are rejected.
+- homeapp-backend cannot be stopped through the API.
+- Dangerous actions require explicit confirmation.
+- No arbitrary shell commands are allowed.
+
 ## v0.2.1
 
 ### Added

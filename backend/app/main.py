@@ -12,8 +12,12 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from .alerts import AlertMonitor
+from .admin_services import list_admin_services_config, require_admin_service
+from .api_response import ApiError, api_error_response, success_response
+from .audit import write_audit_event
 from .config import APP_NAME, APP_VERSION, Settings, get_settings
 from .dashboard_service import get_dashboard_summary
+from .docker_admin import get_admin_service_logs
 from .events import EventStore
 from .file_service import delete_path, list_files, mkdir, recent_youtube_downloads, safe_resolve_path, upload_file
 from .integrations.metube import add_youtube_download
@@ -237,6 +241,35 @@ def admin_docker_endpoint(_: Settings = Depends(require_token)) -> DockerContain
 @app.get("/api/admin/services-health", response_model=ServicesHealthResponse)
 async def admin_services_health_endpoint(current_settings: Settings = Depends(require_token)) -> ServicesHealthResponse:
     return await check_services_health(current_settings)
+
+
+@app.get("/api/admin/services-registry")
+def admin_services_registry_endpoint(_: Settings = Depends(require_token)):
+    services = [service.model_dump() for service in list_admin_services_config()]
+    return success_response({"services": services})
+
+
+@app.get("/api/admin/services-registry/{name}")
+def admin_service_registry_endpoint(name: str, _: Settings = Depends(require_token)):
+    try:
+        return success_response({"service": require_admin_service(name).model_dump()})
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/admin/services-registry/{name}/logs")
+def admin_service_logs_endpoint(
+    name: str,
+    tail: int = Query(default=200),
+    _: Settings = Depends(require_token),
+):
+    try:
+        logs = get_admin_service_logs(name, tail)
+    except ApiError as exc:
+        write_audit_event("service.logs.view", service=name, result="failed", details={"code": exc.code})
+        return api_error_response(exc)
+    write_audit_event("service.logs.view", service=name, result="success", details={"tail": max(10, min(int(tail), 1000))})
+    return success_response({"service": name, "tail": max(10, min(int(tail), 1000)), "logs": logs})
 
 
 @app.get("/api/admin/events", response_model=EventsResponse)

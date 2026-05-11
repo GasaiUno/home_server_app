@@ -1,4 +1,6 @@
 import type {
+  AdminRegistryService,
+  ApiEnvelope,
   DockerContainer,
   EventItem,
   DashboardSummary,
@@ -145,6 +147,19 @@ export function getAdminDocker(token: string): Promise<{ containers: DockerConta
 
 export function getAdminServicesHealth(token: string): Promise<{ services: ServiceHealthItem[] }> {
   return request<{ services: ServiceHealthItem[] }>("/api/admin/services-health", token);
+}
+
+export async function getAdminServicesRegistry(token: string): Promise<{ services: AdminRegistryService[] }> {
+  const response = await request<ApiEnvelope<{ services: AdminRegistryService[] }>>("/api/admin/services-registry", token);
+  return response.data;
+}
+
+export async function getAdminServiceLogs(token: string, name: string, tail = 200): Promise<{ service: string; tail: number; logs: string[] }> {
+  const response = await request<ApiEnvelope<{ service: string; tail: number; logs: string[] }>>(
+    `/api/admin/services-registry/${encodeURIComponent(name)}/logs?tail=${tail}`,
+    token
+  );
+  return response.data;
 }
 
 export function getAdminEvents(token: string): Promise<{ events: EventItem[]; telegram: TelegramStatus }> {

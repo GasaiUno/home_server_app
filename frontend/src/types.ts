@@ -89,6 +89,24 @@ export type ServiceHealthItem = {
   response_time_ms: number | null;
 };
 
+export type AdminRegistryService = {
+  key: string;
+  display_name: string;
+  container_name: string;
+  url: string | null;
+  category: string;
+  allow_logs: boolean;
+  allow_restart: boolean;
+  allow_start: boolean;
+  allow_stop: boolean;
+  danger_level: "low" | "medium" | "high";
+};
+
+export type ApiEnvelope<T> = {
+  ok: boolean;
+  data: T;
+};
+
 export type EventItem = {
   id: string;
   level: string;

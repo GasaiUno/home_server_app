@@ -7,6 +7,8 @@ import {
   getAdminDocker,
   getAdminEvents,
   getAdminMetrics,
+  getAdminServiceLogs,
+  getAdminServicesRegistry,
   getAdminServicesHealth,
   getTorrents,
   pauseTorrent,
@@ -24,6 +26,7 @@ import { TelegramAlertsStatus } from "../components/TelegramAlertsStatus";
 import { TestTelegramAlertButton } from "../components/TestTelegramAlertButton";
 import { TorrentTable } from "../components/TorrentTable";
 import type {
+  AdminRegistryService,
   DockerContainer,
   EventItem,
   Notice,
@@ -73,6 +76,11 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
   const [files, setFiles] = useState<FilesListResponse | null>(null);
   const [filePath, setFilePath] = useState("media");
   const [filesLoading, setFilesLoading] = useState(false);
+  const [registry, setRegistry] = useState<AdminRegistryService[]>([]);
+  const [registryLoading, setRegistryLoading] = useState(false);
+  const [logsService, setLogsService] = useState<AdminRegistryService | null>(null);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const loadMonitoring = useCallback(async () => {
     setMonitoringLoading(true);
@@ -111,6 +119,22 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
       void loadMonitoring();
     }
   }, [activeTab, loadMonitoring]);
+
+  const loadRegistry = useCallback(async () => {
+    setRegistryLoading(true);
+    try {
+      const payload = await getAdminServicesRegistry(token);
+      setRegistry(payload.services);
+    } catch (error) {
+      onNotice({ type: "error", message: `Не удалось загрузить registry: ${getErrorMessage(error)}` });
+    } finally {
+      setRegistryLoading(false);
+    }
+  }, [onNotice, token]);
+
+  useEffect(() => {
+    if (activeTab === "services") void loadRegistry();
+  }, [activeTab, loadRegistry]);
 
   const loadTorrents = useCallback(async () => {
     setTorrentLoading(true);
@@ -192,6 +216,20 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     }
   }
 
+  async function openServiceLogs(service: AdminRegistryService) {
+    setLogsService(service);
+    setLogs([]);
+    setLogsLoading(true);
+    try {
+      const payload = await getAdminServiceLogs(token, service.key, 200);
+      setLogs(payload.logs);
+    } catch (error) {
+      onNotice({ type: "error", message: `Не удалось открыть logs: ${getErrorMessage(error)}` });
+    } finally {
+      setLogsLoading(false);
+    }
+  }
+
   return (
     <>
       <div className="admin-header-row">
@@ -201,7 +239,12 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           type="button"
           onClick={
             activeTab === "monitoring" || activeTab === "services" || activeTab === "events"
-              ? loadMonitoring
+              ? activeTab === "services"
+                ? () => {
+                    void loadMonitoring();
+                    void loadRegistry();
+                  }
+                : loadMonitoring
               : activeTab === "downloads"
                 ? loadTorrents
                 : activeTab === "files"
@@ -262,7 +305,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           onNotice={onNotice}
         />
       ) : activeTab === "services" ? (
-        <ServicesHealthTable services={health} />
+        <ServicesFoundationPanel services={registry} loading={registryLoading} health={health} onViewLogs={(service) => void openServiceLogs(service)} />
       ) : activeTab === "events" ? (
         <EventsTimeline events={events} />
       ) : (
@@ -277,8 +320,94 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           onConfirm={confirmDeleteTorrent}
         />
       ) : null}
+      {logsService ? (
+        <div className="dialog-backdrop" role="presentation">
+          <section className="confirm-dialog service-logs-dialog" role="dialog" aria-modal="true" aria-label={`${logsService.display_name} logs`}>
+            <h2>{logsService.display_name} logs</h2>
+            <p className="muted">{logsLoading ? "Загрузка..." : `${logs.length} строк, только чтение`}</p>
+            <pre className="logs-pre">{logs.length ? logs.join("\n") : "No logs"}</pre>
+            <div className="dialog-actions">
+              <button type="button" className="secondary-muted-button" onClick={() => setLogsService(null)}>
+                Закрыть
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </>
   );
+}
+
+function ServicesFoundationPanel({
+  services,
+  loading,
+  health,
+  onViewLogs
+}: {
+  services: AdminRegistryService[];
+  loading: boolean;
+  health: ServiceHealthItem[];
+  onViewLogs: (service: AdminRegistryService) => void;
+}) {
+  const healthById = new Map(health.map((item) => [item.id, item]));
+  return (
+    <>
+      <section className="panel services-panel">
+        <div className="panel-header">
+          <div>
+            <h2>v0.3 foundation</h2>
+            <p className="muted">Whitelist, logs-only access, no service actions.</p>
+          </div>
+          <span>{loading ? "..." : services.length}</span>
+        </div>
+        {services.length === 0 ? <p className="muted">{loading ? "Загрузка registry..." : "Registry empty"}</p> : null}
+        <div className="admin-services-grid registry-grid">
+          {services.map((service) => {
+            const serviceHealth = healthById.get(service.key);
+            return (
+              <article key={service.key} className="admin-service-card registry-card">
+                <span>
+                  <strong>{service.display_name}</strong>
+                  <small className="mono-text">{service.container_name}</small>
+                  <small>
+                    {service.category} / danger: {service.danger_level}
+                  </small>
+                  <small>
+                    actions: {allowedActions(service)}
+                    {serviceHealth ? ` / ${serviceHealth.online ? "online" : "offline"}` : ""}
+                  </small>
+                </span>
+                <div className="registry-actions">
+                  {service.url ? (
+                    <a className="icon-button" href={service.url} target="_blank" rel="noreferrer" aria-label={`Open ${service.display_name}`}>
+                      <ExternalLink size={17} aria-hidden="true" />
+                    </a>
+                  ) : null}
+                  {service.allow_logs ? (
+                    <button type="button" className="secondary-muted-button compact-button" onClick={() => onViewLogs(service)}>
+                      Logs
+                    </button>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+      <ServicesHealthTable services={health} />
+    </>
+  );
+}
+
+function allowedActions(service: AdminRegistryService): string {
+  return [
+    service.allow_logs ? "logs" : null,
+    service.allow_restart ? "restart" : null,
+    service.allow_start ? "start" : null,
+    service.allow_stop ? "stop" : null
+  ]
+    .filter(Boolean)
+    .join(", ");
 }
 
 function OverviewTab({ services, status, loading }: { services: ServiceItem[]; status: StatusResponse | null; loading: boolean }) {
@@ -287,7 +416,7 @@ function OverviewTab({ services, status, loading }: { services: ServiceItem[]; s
       <section className="status-grid" aria-label="Статус сервера">
         <StatusTile icon={Activity} label="Backend" value={status?.status ?? (loading ? "loading" : "unknown")} />
         <StatusTile icon={Gauge} label="Uptime" value={status ? formatUptime(status.uptime_seconds) : "unknown"} />
-        <StatusTile icon={Server} label="Version" value={status?.version ?? "0.2.0"} />
+        <StatusTile icon={Server} label="Version" value={status?.version ?? "0.2.2"} />
         <StatusTile icon={Clock3} label="Server time" value={formatServerTime(status?.server_time)} />
       </section>
 

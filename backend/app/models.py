@@ -231,6 +231,10 @@ class DeleteFileRequest(BaseModel):
     path: str = Field(min_length=1)
 
 
+class ConfirmRequest(BaseModel):
+    confirm: bool = False
+
+
 class YoutubeDownloadItem(BaseModel):
     name: str
     path: str

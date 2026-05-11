@@ -31,7 +31,7 @@ def test_status_returns_backend_metadata_with_token(client):
     assert response.status_code == 200
     assert payload["status"] == "ok"
     assert payload["app"] == "Home Server App"
-    assert payload["version"] == "0.2.1"
+    assert payload["version"] == "0.2.2"
     assert isinstance(payload["uptime_seconds"], int)
     assert payload["server_time"]
 
@@ -117,6 +117,31 @@ def test_admin_services_health_returns_service_checks(client):
     assert {service["id"] for service in payload["services"]} >= {"jellyfin", "navidrome"}
     assert all("response_time_ms" in service for service in payload["services"])
     assert all("checked_url" in service for service in payload["services"])
+
+
+def test_admin_services_registry_requires_token(client):
+    response = client.get("/api/admin/services-registry")
+
+    assert response.status_code == 401
+
+
+def test_admin_services_registry_returns_whitelist(client):
+    response = client.get("/api/admin/services-registry", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["ok"] is True
+    service_keys = {service["key"] for service in payload["data"]["services"]}
+    assert {"jellyfin", "qbittorrent", "n8n", "homeapp-backend"} <= service_keys
+
+
+def test_admin_services_registry_rejects_unknown_service(client):
+    response = client.get("/api/admin/services-registry/unknown", headers={"X-Home-Token": "test-token"})
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload["ok"] is False
+    assert payload["error"]["code"] == "SERVICE_NOT_ALLOWED"
 
 
 def test_admin_events_returns_events_and_telegram_status(client):
