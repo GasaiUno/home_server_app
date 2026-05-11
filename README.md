@@ -1,6 +1,137 @@
-# Home Server App v0.2.0
+# Home Server App v0.2.1
 
-Лёгкая PWA-панель для домашнего сервера за VPN. Frontend открывается на `8091`, backend API на `8090`.
+Home Server App — лёгкая PWA-панель для домашнего сервера за VPN. Приложение объединяет пользовательский Home Mode и Admin Mode: медиа, файлы, загрузки, мониторинг, сервисы, события и настройки.
+
+Frontend открывается на `8091`, backend API на `8090`.
+
+## Текущий статус
+
+Реализована версия v0.2.1.
+
+- PWA frontend на React/Vite/TypeScript;
+- FastAPI backend;
+- авторизация через X-Home-Token;
+- Home Mode;
+- Admin Mode;
+- карточки сервисов;
+- быстрые действия YouTube/magnet;
+- управление qBittorrent;
+- список YouTube-загрузок;
+- файловый браузер по разрешённым папкам;
+- dashboard summary;
+- monitoring;
+- Docker/services health overview;
+- events;
+- Telegram alerts;
+- mobile-first UI;
+- bottom navigation;
+- карточный интерфейс;
+- skeleton loading;
+- toast notifications;
+- empty/error states;
+- responsive layout для телефона и desktop.
+
+## Roadmap
+
+### v0.1 — базовая PWA-панель
+
+- React/Vite/TypeScript frontend
+- FastAPI backend
+- Docker Compose
+- PWA
+- access token
+- карточки сервисов
+- YouTube/magnet actions
+
+### v0.1.1 — Home Mode + Admin Mode
+
+- разделение пользовательского режима и админки
+- Home navigation
+- Admin navigation
+- Settings
+
+### v0.1.2 — мониторинг и Telegram alerts
+
+- CPU/RAM/Disk/Uptime
+- Docker/service health
+- events
+- Telegram alerts
+
+### v0.2 — загрузки, торренты и файлы
+
+- torrents list
+- pause/resume/delete
+- add magnet
+- upload .torrent
+- YouTube downloads
+- files browser
+- upload/mkdir/delete, если разрешено
+
+### v0.2.1 — mobile UI refresh
+
+- mobile-first layout
+- bottom navigation
+- cards
+- skeleton loading
+- toast notifications
+- empty states
+- error states
+- responsive tables/cards
+- unified design system
+
+### v0.3 — media overview and service control
+
+Запланировано:
+
+- Jellyfin overview;
+- Navidrome overview;
+- Docker service whitelist;
+- service logs;
+- safe restart/start/stop для разрешённых контейнеров;
+- task history.
+
+### v0.3.1 — backups UI
+
+Запланировано:
+
+- create backup;
+- list backups;
+- download backup;
+- delete old backup;
+- scheduled backup status.
+
+### v0.4 — безопасный внешний доступ
+
+Запланировано:
+
+- Public/User/Admin separation;
+- Cloudflare Access compatibility;
+- rate limit;
+- audit log;
+- запрет dangerous actions из публичного режима.
+
+### v0.5 — users and roles
+
+Запланировано:
+
+- Admin/User/Guest;
+- login/password;
+- sessions;
+- permissions;
+- user management;
+- Telegram approve для новых пользователей.
+
+## Следующий этап
+
+Следующий этап разработки — v0.3 foundation:
+
+- service whitelist;
+- безопасный Docker admin layer;
+- logs viewer;
+- confirm-required actions;
+- audit log;
+- запрет произвольных Docker-команд;
+- запрет управления неизвестными контейнерами.
 
 ## Что нового в v0.2
 

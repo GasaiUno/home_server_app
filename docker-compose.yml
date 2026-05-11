@@ -9,7 +9,7 @@ services:
       HOME_APP_TOKEN: ${HOME_APP_TOKEN}
       N8N_YT_WEBHOOK: ${N8N_YT_WEBHOOK:-http://n8n:5678/webhook/yt}
       N8N_MAGNET_WEBHOOK: ${N8N_MAGNET_WEBHOOK:-http://n8n:5678/webhook/magnet}
-      APP_VERSION: ${APP_VERSION:-0.2.0}
+      APP_VERSION: ${APP_VERSION:-0.2.1}
       TZ: ${TZ:-Europe/Moscow}
       QB_URL: ${QB_URL:-http://qbittorrent:8080}
       QB_USERNAME: ${QB_USERNAME:-}
