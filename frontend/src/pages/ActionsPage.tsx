@@ -13,9 +13,9 @@ export function ActionsPage({ token, onNotice }: ActionsPageProps) {
   return (
     <>
       <PageHeader
-        kicker="Быстрые действия"
-        title="Actions"
-        subtitle="Отправка ссылок в существующие n8n webhook без лишней навигации."
+        kicker="Control actions"
+        title="Действия"
+        subtitle="Две основные точки входа: YouTube download и torrent flow."
       />
       <section className="forms-layout actions-v2">
         <AddYoutubeForm token={token} onNotice={onNotice} />

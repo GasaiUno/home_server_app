@@ -5,6 +5,7 @@ import { getServices, getStatus } from "./api";
 import { AppNavigation } from "./components/AppNavigation";
 import { ActionsPage } from "./pages/ActionsPage";
 import { AdminPage } from "./pages/AdminPage";
+import { DownloadsPage } from "./pages/DownloadsPage";
 import { FilesPage } from "./pages/FilesPage";
 import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -81,8 +82,8 @@ export function App() {
           <div className="brand-mark">
             <Server size={30} aria-hidden="true" />
           </div>
-          <h1>Home Server</h1>
-          <p>Введите access token для подключения к домашнему центру.</p>
+          <h1>Home Server App</h1>
+          <p>Подключение к домашнему серверу</p>
           <form onSubmit={saveToken} className="auth-form">
             <label htmlFor="token">Access token</label>
             <div className="input-row">
@@ -96,7 +97,8 @@ export function App() {
                 autoComplete="current-password"
               />
             </div>
-            <button type="submit">Войти</button>
+            <small className="auth-hint">Токен хранится локально в браузере и отправляется как X-Home-Token.</small>
+            <button type="submit">Connect</button>
           </form>
           {notice ? <p className={`notice ${notice.type}`}>{notice.message}</p> : null}
         </section>
@@ -115,6 +117,7 @@ export function App() {
             element={<HomePage token={token} services={services} status={status} loading={loading} serviceTarget={serviceTarget} />}
           />
           <Route path="/actions" element={<ActionsPage token={token} onNotice={setNotice} />} />
+          <Route path="/downloads" element={<DownloadsPage token={token} onNotice={setNotice} />} />
           <Route path="/files" element={<FilesPage token={token} onNotice={setNotice} />} />
           <Route
             path="/admin"

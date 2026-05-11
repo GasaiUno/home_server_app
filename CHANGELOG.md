@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.2.3
+
+### Added
+- New Dark Liquid Control visual direction.
+- Refined mobile-first app shell.
+- Glass-style bottom navigation.
+- Bento-style dashboard sections.
+- Improved page headers and status cards.
+- More polished loading, empty and error states.
+- Better responsive layouts for mobile and desktop.
+
+### Improved
+- Home screen hierarchy.
+- Actions page clarity.
+- Downloads readability.
+- Files browsing UX.
+- Admin and Monitoring visual organization.
+- Token screen onboarding.
+- Touch target sizes.
+- Visual separation of dangerous actions.
+
+### Changed
+- Updated UI styling and component system.
+- Reduced generic admin-panel feeling.
+- Improved consistency across pages.
+
 ## v0.2.2
 
 ### Added

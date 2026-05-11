@@ -1,4 +1,4 @@
-# Home Server App v0.2.2
+# Home Server App v0.2.3
 
 Home Server App — лёгкая PWA-панель для домашнего сервера за VPN. Приложение объединяет пользовательский Home Mode и Admin Mode: медиа, файлы, загрузки, мониторинг, сервисы, события и настройки.
 
@@ -6,7 +6,7 @@ Frontend открывается на `8091`, backend API на `8090`.
 
 ## Текущий статус
 
-Реализована версия v0.2.2.
+Реализована версия v0.2.3.
 
 - PWA frontend на React/Vite/TypeScript;
 - FastAPI backend;
@@ -32,7 +32,10 @@ Frontend открывается на `8091`, backend API на `8090`.
 - responsive layout для телефона и desktop;
 - admin service whitelist foundation;
 - audit log helper;
-- Docker logs foundation для разрешённых сервисов.
+- Docker logs foundation для разрешённых сервисов;
+- Dark Liquid Control UI redesign;
+- bento-style Home Control Center;
+- glass-style mobile navigation.
 
 ## Roadmap
 
@@ -91,6 +94,15 @@ Frontend открывается на `8091`, backend API на `8090`.
 - safe service registry
 - Docker logs foundation
 - backend tests for admin service permissions
+
+### v0.2.3 — UX/UI Redesign
+
+- Dark Liquid Control visual direction
+- refined mobile-first app shell
+- glass-style bottom navigation
+- bento-style dashboard sections
+- polished loading, empty and error states
+- improved Home, Actions, Downloads, Files, Admin and Token screen UX
 
 ### v0.3 — media overview and service control
 
@@ -158,6 +170,26 @@ v0.2.2 — security/stability foundation перед v0.3. Версия доба�
 - Нет произвольных Docker-команд, `docker exec`, `docker prune`, update images или удаления контейнеров.
 - Неизвестные контейнеры отклоняются.
 - `homeapp-backend` защищён: stop/start/restart через API запрещены.
+
+## v0.2.3 — UX/UI Redesign
+
+v0.2.3 обновляет frontend до визуального направления **Dark Liquid Control**. Цель — сделать приложение похожим на mobile-first control center для домашнего сервера, а не на стандартную web-админку.
+
+Принципы дизайна:
+
+- mobile-first;
+- modern control center;
+- bento-grid layout;
+- тёмная база;
+- мягкие glass panels;
+- аккуратные glow accents;
+- readable typography;
+- status-first dashboard;
+- крупные touch targets;
+- понятные loading/empty/error states;
+- опасные действия визуально отделены.
+
+Изменения касаются UI/UX frontend. Backend endpoints и API-контракты v0.2.2 не менялись.
 
 ## v0.2.2 — Admin security foundation
 

@@ -8,7 +8,7 @@ from .models import ServiceItem
 
 
 APP_NAME = "Home Server App"
-APP_VERSION = getenv("APP_VERSION", "0.2.2")
+APP_VERSION = getenv("APP_VERSION", "0.2.3")
 
 
 DEFAULT_SERVICES = [

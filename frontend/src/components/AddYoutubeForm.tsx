@@ -15,9 +15,11 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
   const [quality, setQuality] = useState("best");
   const [format, setFormat] = useState("any");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
     setLoading(true);
     try {
       await sendYoutube(token, {
@@ -30,15 +32,21 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
       onNotice({ type: "success", message: "YouTube ссылка отправлена на загрузку" });
       onAdded?.();
     } catch (error) {
-      onNotice({ type: "error", message: `Не удалось отправить YouTube ссылку: ${getErrorMessage(error)}` });
+      const message = `Не удалось отправить YouTube ссылку: ${getErrorMessage(error)}`;
+      setError(message);
+      onNotice({ type: "error", message });
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form className="panel action-form" onSubmit={submit}>
-      <h2>Скачать YouTube</h2>
+    <form className="panel action-form action-card-primary" onSubmit={submit}>
+      <div className="form-title-row">
+        <h2>YouTube Download</h2>
+        <span>MeTube</span>
+      </div>
+      <p className="muted">Видео или аудио. Для audio формат `any` будет отправлен как `mp3`.</p>
       <label htmlFor="youtube-url">URL</label>
       <input id="youtube-url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://youtube.com/..." inputMode="url" />
       <div className="form-row">
@@ -48,6 +56,7 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
             <option value="video">Видео</option>
             <option value="audio">Аудио</option>
           </select>
+          <small>video для ролика, audio для музыки</small>
         </label>
         <label>
           Качество
@@ -57,6 +66,7 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
             <option value="720">720</option>
             <option value="480">480</option>
           </select>
+          <small>best оставляет выбор backend</small>
         </label>
         <label>
           Формат
@@ -65,8 +75,10 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
             <option value="mp4">mp4</option>
             <option value="mp3">mp3</option>
           </select>
+          <small>mp4/mp3 или auto</small>
         </label>
       </div>
+      {error ? <p className="inline-error">{error}</p> : null}
       <button type="submit" disabled={loading || !url.trim()}>
         {loading ? "Отправка..." : "Отправить в MeTube"}
       </button>

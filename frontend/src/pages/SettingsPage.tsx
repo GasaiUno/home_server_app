@@ -34,7 +34,7 @@ export function SettingsPage({ status, serviceTarget, onTargetChange, onChangeTo
             </div>
             <div>
               <dt>Версия</dt>
-              <dd>{status?.version ?? "0.2.2"}</dd>
+              <dd>{status?.version ?? "0.2.3"}</dd>
             </div>
             <div>
               <dt>Время</dt>

@@ -1,9 +1,12 @@
 import { Download, Folder, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { deleteFilePath, downloadFile } from "../api";
 import type { FileItem, FilesListResponse, Notice } from "../types";
 import { formatBytes } from "../utils";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { FileBreadcrumbs } from "./FileBreadcrumbs";
 import { FileUpload } from "./FileUpload";
+import { EmptyState, SkeletonCard } from "./Surface";
 
 type FileBrowserProps = {
   token: string;
@@ -16,11 +19,13 @@ type FileBrowserProps = {
 };
 
 export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh, onNotice }: FileBrowserProps) {
+  const [pendingDelete, setPendingDelete] = useState<FileItem | null>(null);
+
   async function remove(item: FileItem) {
-    if (!window.confirm(`Удалить ${item.name}?`)) return;
     try {
       await deleteFilePath(token, item.path);
       onNotice({ type: "success", message: "Удалено" });
+      setPendingDelete(null);
       onRefresh();
     } catch {
       onNotice({ type: "error", message: "Удаление запрещено или не удалось" });
@@ -43,20 +48,33 @@ export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh,
 
   return (
     <section className="files-page">
-      <div className="file-roots" aria-label="Разделы файлов">
-        {["media", "music", "torrents", "youtube", "books"].map((root) => (
-          <button key={root} type="button" className={path.split("/")[0] === root ? "active" : ""} onClick={() => onNavigate(root)}>
-            {root}
-          </button>
-        ))}
-      </div>
-      <FileBreadcrumbs path={path} onNavigate={onNavigate} />
-      <FileUpload token={token} path={path} onNotice={onNotice} onChanged={onRefresh} />
+      <section className="panel file-control-panel">
+        <div className="panel-header">
+          <div>
+            <h2>File control</h2>
+            <p className="muted">Разрешённые корни, загрузка и безопасные действия.</p>
+          </div>
+          <span>{path}</span>
+        </div>
+        <div className="file-roots" aria-label="Разделы файлов">
+          {["media", "music", "torrents", "youtube", "books"].map((root) => (
+            <button key={root} type="button" className={path.split("/")[0] === root ? "active" : ""} onClick={() => onNavigate(root)}>
+              {root}
+            </button>
+          ))}
+        </div>
+        <FileBreadcrumbs path={path} onNavigate={onNavigate} />
+        <FileUpload token={token} path={path} onNotice={onNotice} onChanged={onRefresh} />
+      </section>
       <section className="panel table-panel">
         <div className="panel-header">
           <h2>Файлы</h2>
           <span>{loading ? "..." : data?.items.length ?? 0}</span>
         </div>
+        {loading && !data ? <SkeletonCard lines={5} /> : null}
+        {!loading && data?.items.length === 0 ? (
+          <EmptyState icon={Folder} title="Папка пуста" description="Здесь пока нет файлов или директорий." />
+        ) : null}
         <div className="file-list">
           {data?.items.map((item) => (
             <article key={item.path} className="file-row">
@@ -73,7 +91,7 @@ export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh,
                 </button>
               ) : null}
               {data.allow_delete ? (
-                <button type="button" className="icon-danger" onClick={() => remove(item)}>
+                <button type="button" className="icon-danger" onClick={() => setPendingDelete(item)} aria-label={`Удалить ${item.name}`}>
                   <Trash2 size={17} />
                 </button>
               ) : null}
@@ -81,6 +99,15 @@ export function FileBrowser({ token, data, path, loading, onNavigate, onRefresh,
           ))}
         </div>
       </section>
+      {pendingDelete ? (
+        <ConfirmDialog
+          title="Удалить файл?"
+          text={`Удалить "${pendingDelete.name}"? Действие нельзя отменить через интерфейс.`}
+          confirmLabel="Удалить"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={() => void remove(pendingDelete)}
+        />
+      ) : null}
     </section>
   );
 }
