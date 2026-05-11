@@ -41,12 +41,12 @@ export function AddYoutubeForm({ token, onNotice, onAdded }: AddYoutubeFormProps
   }
 
   return (
-    <form className="panel action-form action-card-primary" onSubmit={submit}>
+    <form className="panel action-form action-card-primary command-form command-youtube" onSubmit={submit}>
       <div className="form-title-row">
         <h2>Скачать YouTube</h2>
         <span>MeTube</span>
       </div>
-      <p className="muted">Видео или аудио. Если формат не выбран, сервер подберёт подходящий вариант.</p>
+      <p className="muted">Ссылка уйдёт в MeTube. Можно скачать ролик целиком или только аудио.</p>
       <label htmlFor="youtube-url">Ссылка на YouTube</label>
       <input id="youtube-url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://youtube.com/..." inputMode="url" />
       <div className="form-row">

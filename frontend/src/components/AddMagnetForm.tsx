@@ -34,7 +34,7 @@ export function AddMagnetForm({ token, onNotice, onAdded }: AddMagnetFormProps) 
   }
 
   return (
-    <form className="panel action-form action-card-primary" onSubmit={submit}>
+    <form className="panel action-form action-card-primary command-form command-magnet" onSubmit={submit}>
       <div className="form-title-row">
         <h2>Добавить magnet</h2>
         <span>qBittorrent</span>

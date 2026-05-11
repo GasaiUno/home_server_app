@@ -57,7 +57,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
       setPendingDelete(null);
       await loadTorrents();
     } catch (error) {
-      onNotice({ type: "error", message: `Не удалось удалить torrent: ${getErrorMessage(error)}` });
+      onNotice({ type: "error", message: `Не удалось удалить торрент: ${getErrorMessage(error)}` });
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export function DownloadsPage({ token, onNotice }: DownloadsPageProps) {
 
   return (
     <>
-      <PageHeader kicker="очередь сервера" title="Загрузки" subtitle="Торренты, YouTube и текущая очередь." />
+      <PageHeader kicker="домашняя очередь" title="Загрузки" subtitle="Торренты, YouTube и текущая очередь." />
       <TorrentTable
         torrents={torrents}
         loading={loading}

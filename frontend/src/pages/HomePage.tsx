@@ -9,20 +9,20 @@ import {
   HardDrive,
   Link2,
   Music,
+  Play,
+  Radio,
+  Server,
   Settings,
   ShieldCheck,
   Upload,
   Zap
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminEvents, getDashboardSummary, getTorrents, getYoutubeDownloads } from "../api";
-import { QuickActionCard } from "../components/QuickActionCard";
-import { StatusBadge } from "../components/StatusBadge";
-import { MetricPill } from "../components/Surface";
 import type { DashboardSummary, EventItem, ServiceItem, ServiceTarget, StatusResponse, TorrentItem, YoutubeDownloadItem } from "../types";
-import { findServiceUrl } from "../utils";
+import { findServiceUrl, formatSpeed } from "../utils";
 
 type HomePageProps = {
   token: string;
@@ -32,13 +32,21 @@ type HomePageProps = {
   serviceTarget: ServiceTarget;
 };
 
-type ServiceGroup = {
+type HubAction = {
+  label: string;
+  to?: string;
+  href?: string;
+  primary?: boolean;
+};
+
+type ScenarioPanelProps = {
   title: string;
-  description: string;
+  text: string;
   icon: LucideIcon;
-  accent: string;
-  services: string[];
-  actions: Array<{ label: string; to?: string; href?: string }>;
+  className: string;
+  meta: string[];
+  actions: HubAction[];
+  target: ServiceTarget;
 };
 
 const serviceUrlFallbacks: Record<string, string> = {
@@ -67,236 +75,182 @@ export function HomePage({ token, services, status, loading, serviceTarget }: Ho
     return url === "#" ? (serviceUrlFallbacks[id] ?? "#") : url;
   };
   const activeTorrents = torrents.filter((torrent) => torrent.dlspeed > 0 || torrent.upspeed > 0);
+  const totalDownloadSpeed = torrents.reduce((total, torrent) => total + torrent.dlspeed, 0);
+  const totalUploadSpeed = torrents.reduce((total, torrent) => total + torrent.upspeed, 0);
   const onlineServices = summary?.services.online ?? 0;
   const offlineServices = summary?.services.offline ?? 0;
-  const serviceStatusText = offlineServices > 0 ? "есть проблемы" : onlineServices > 0 ? "всё работает" : "проверяем";
-  const serviceStatusTone = offlineServices > 0 ? "warning" : onlineServices > 0 ? "online" : "neutral";
-
-  const serviceGroups = useMemo<ServiceGroup[]>(
-    () => [
-      {
-        title: "Фильмы и сериалы",
-        description: "Смотреть медиатеку, управлять фильмами и сериалами.",
-        icon: Film,
-        accent: "violet",
-        services: ["Jellyfin", "Radarr", "Sonarr"],
-        actions: [
-          { label: "Открыть Jellyfin", href: serviceUrl("jellyfin") },
-          { label: "Фильмы", href: serviceUrl("radarr") || serviceUrl("jellyfin") },
-          { label: "Сериалы", href: serviceUrl("sonarr") || serviceUrl("jellyfin") }
-        ]
-      },
-      {
-        title: "Музыка",
-        description: "Слушать музыку с домашнего сервера.",
-        icon: Music,
-        accent: "teal",
-        services: ["Navidrome"],
-        actions: [{ label: "Открыть музыку", href: serviceUrl("navidrome") }]
-      },
-      {
-        title: "Загрузки",
-        description: "Торренты, YouTube-загрузки и индексаторы.",
-        icon: Download,
-        accent: "blue",
-        services: ["qBittorrent", "MeTube", "Prowlarr"],
-        actions: [
-          { label: "Торренты", href: serviceUrl("qbittorrent") },
-          { label: "YouTube", to: "/actions" },
-          { label: "Индексаторы", href: serviceUrl("prowlarr") || serviceUrl("qbittorrent") }
-        ]
-      },
-      {
-        title: "Файлы",
-        description: "Медиа, музыка, книги, YouTube, заметки и документы.",
-        icon: Folder,
-        accent: "amber",
-        services: ["File Browser"],
-        actions: [
-          { label: "Открыть файлы", to: "/files" },
-          { label: "Книги", to: "/files" },
-          { label: "Заметки", to: "/files" }
-        ]
-      },
-      {
-        title: "Автоматизация",
-        description: "Сценарии, уведомления и быстрые команды.",
-        icon: Bot,
-        accent: "rose",
-        services: ["n8n", "Telegram bot"],
-        actions: [
-          { label: "Открыть n8n", href: serviceUrl("n8n") },
-          { label: "События", to: "/admin" }
-        ]
-      },
-      {
-        title: "Администрирование",
-        description: "Состояние сервера, контейнеры, логи и обслуживание.",
-        icon: ShieldCheck,
-        accent: "slate",
-        services: ["Мониторинг", "Docker", "Сервисы", "События", "Настройки"],
-        actions: [
-          { label: "Мониторинг", to: "/admin" },
-          { label: "Админка", to: "/admin" }
-        ]
-      }
-    ],
-    [services]
-  );
+  const serverLabel = offlineServices > 0 ? "есть проблемы" : loading ? "проверяем сервер" : "всё работает";
 
   return (
-    <>
-      <section className="home-hero home-server-hero">
-        <div className="hero-copy">
-          <p className="section-label">панель дома</p>
-          <h1>Домашний сервер</h1>
-          <p className="page-subtitle">Фильмы, музыка, загрузки, файлы и автоматизация в одном месте.</p>
-          <div className="home-status-line" aria-label="Состояние сервера">
-            <StatusBadge state={serviceStatusTone} label={serviceStatusText} />
-            <span>{onlineServices || services.length} сервисов доступно</span>
-          </div>
-          <div className="hero-metrics" aria-label="Краткие метрики">
-            <MetricPill label="CPU" value={summary?.server.cpu_percent != null ? `${summary.server.cpu_percent}%` : "—"} />
-            <MetricPill label="RAM" value={summary?.server.memory_percent != null ? `${summary.server.memory_percent}%` : "—"} />
-            <MetricPill label="Диск" value={summary?.server.disk_percent != null ? `${summary.server.disk_percent}%` : "—"} />
-            <MetricPill label="Загрузки" value={activeTorrents.length} status={activeTorrents.length ? "success" : "neutral"} />
-          </div>
-          <div className="hero-actions">
-            <Link className="primary-link-button" to="/actions">
-              Скачать YouTube
-            </Link>
-            <Link className="secondary-button" to="/actions">
-              Добавить magnet
-            </Link>
-            <Link className="secondary-button" to="/files">
-              Открыть файлы
-            </Link>
-          </div>
-        </div>
-        <div className="hero-service-strip" aria-label="Быстрые сервисы">
-          <HeroServiceLink title="Jellyfin" subtitle="Фильмы" href={serviceUrl("jellyfin")} target={serviceTarget} icon={Film} />
-          <HeroServiceLink title="Navidrome" subtitle="Музыка" href={serviceUrl("navidrome")} target={serviceTarget} icon={Music} />
-          <HeroServiceLink title="qBittorrent" subtitle="Торренты" href={serviceUrl("qbittorrent")} target={serviceTarget} icon={Download} />
-        </div>
+    <div className="media-hub-page">
+      <MediaHero
+        status={status}
+        loading={loading}
+        serverLabel={serverLabel}
+        onlineServices={onlineServices || services.length}
+        offlineServices={offlineServices}
+        summary={summary}
+        activeTorrents={activeTorrents.length}
+        jellyfinUrl={serviceUrl("jellyfin")}
+        navidromeUrl={serviceUrl("navidrome")}
+        target={serviceTarget}
+      />
+
+      <section className="media-hub-layout" aria-label="Медиа-хаб">
+        <ScenarioPanel
+          className="scenario-cinema"
+          title="Смотреть"
+          text="Фильмы, сериалы и домашняя медиатека через Jellyfin. Radarr и Sonarr рядом, когда нужно пополнить коллекцию."
+          icon={Film}
+          meta={["Jellyfin", "Radarr", "Sonarr"]}
+          target={serviceTarget}
+          actions={[
+            { label: "Смотреть фильмы", href: serviceUrl("jellyfin"), primary: true },
+            { label: "Фильмы", href: serviceUrl("radarr") },
+            { label: "Сериалы", href: serviceUrl("sonarr") }
+          ]}
+        />
+        <ScenarioPanel
+          className="scenario-music"
+          title="Слушать"
+          text="Музыка с домашнего сервера без лишних экранов: открыть Navidrome и продолжить библиотеку."
+          icon={Music}
+          meta={["Navidrome", "музыка", "плейлисты"]}
+          target={serviceTarget}
+          actions={[{ label: "Открыть музыку", href: serviceUrl("navidrome"), primary: true }]}
+        />
+        <DownloadsHub
+          active={activeTorrents.length}
+          downSpeed={totalDownloadSpeed}
+          upSpeed={totalUploadSpeed}
+          qbUrl={serviceUrl("qbittorrent")}
+          prowlarrUrl={serviceUrl("prowlarr")}
+          target={serviceTarget}
+        />
+        <ScenarioPanel
+          className="scenario-files"
+          title="Файлы"
+          text="Медиа, музыка, книги, YouTube-загрузки и документы в одном файловом разделе."
+          icon={Folder}
+          meta={["File Browser", "книги", "YouTube"]}
+          target={serviceTarget}
+          actions={[
+            { label: "Открыть файлы", to: "/files", primary: true },
+            { label: "Книги", to: "/files" },
+            { label: "Загрузить файл", to: "/files" }
+          ]}
+        />
       </section>
 
-      <section className="home-section">
-        <div className="section-heading">
-          <h2>Мои сервисы</h2>
-          <span>по задачам</span>
-        </div>
-        <div className="service-story-grid">
-          {serviceGroups.map((group) => (
-            <ServiceGroupCard key={group.title} group={group} target={serviceTarget} />
-          ))}
-        </div>
+      <section className="hub-bottom-rail">
+        <NowPlayingFeed activeTorrents={activeTorrents} downloads={downloads} events={events} offlineServices={offlineServices} disk={summary?.server.disk_percent} />
+        <QuickCommandRail />
+        <MaintenancePanel offlineServices={offlineServices} onlineServices={onlineServices || services.length} status={status?.status} />
       </section>
-
-      <section className="home-section">
-        <div className="section-heading">
-          <h2>Сейчас происходит</h2>
-          <span>без таблиц</span>
-        </div>
-        <div className="activity-grid">
-          <ActivityCard
-            icon={Zap}
-            title="Активные торренты"
-            value={activeTorrents.length ? `${activeTorrents.length} в работе` : "нет активных"}
-            detail={activeTorrents[0]?.name ?? "Очередь qBittorrent спокойна"}
-            to="/downloads"
-          />
-          <ActivityCard
-            icon={Download}
-            title="Последние YouTube-загрузки"
-            value={downloads.length ? `${downloads.length} файлов` : "пока пусто"}
-            detail={downloads[0]?.name ?? "Новые ролики появятся здесь"}
-            to="/actions"
-          />
-          <ActivityCard
-            icon={Bell}
-            title="События"
-            value={events.length ? `${events.length} записей` : "нет событий"}
-            detail={events[0]?.message ?? "Предупреждений сейчас нет"}
-            to="/admin"
-          />
-          <ActivityCard
-            icon={HardDrive}
-            title="Свободное место"
-            value={summary?.server.disk_percent != null ? `${100 - summary.server.disk_percent}% свободно` : "—"}
-            detail={offlineServices > 0 ? `${offlineServices} сервисов требуют внимания` : "Сервисы выглядят доступными"}
-            to="/admin"
-          />
-        </div>
-      </section>
-
-      <section className="home-section">
-        <div className="section-heading">
-          <h2>Быстрые действия</h2>
-          <span>частые задачи</span>
-        </div>
-        <div className="quick-grid quick-grid-priority">
-          <QuickActionCard title="Скачать YouTube" description="Видео или аудио через MeTube" icon={Link2} to="/actions" />
-          <QuickActionCard title="Добавить magnet" description="Отправить в qBittorrent" icon={Download} to="/actions" />
-          <QuickActionCard title="Загрузить файл" description="Открыть файловый раздел" icon={Upload} to="/files" />
-          <QuickActionCard title="Открыть загрузки" description="Торренты и очередь" icon={Zap} to="/downloads" />
-          <QuickActionCard title="Открыть админку" description="Мониторинг и обслуживание" icon={Settings} to="/admin" />
-          <QuickActionCard title="Открыть книги" description="Раздел файлов" icon={BookOpen} to="/files" />
-        </div>
-      </section>
-    </>
+    </div>
   );
 }
 
-function HeroServiceLink({
-  title,
-  subtitle,
-  href,
-  target,
-  icon: Icon
+function MediaHero({
+  status,
+  loading,
+  serverLabel,
+  onlineServices,
+  offlineServices,
+  summary,
+  activeTorrents,
+  jellyfinUrl,
+  navidromeUrl,
+  target
 }: {
-  title: string;
-  subtitle: string;
-  href: string;
+  status: StatusResponse | null;
+  loading: boolean;
+  serverLabel: string;
+  onlineServices: number;
+  offlineServices: number;
+  summary: DashboardSummary | null;
+  activeTorrents: number;
+  jellyfinUrl: string;
+  navidromeUrl: string;
   target: ServiceTarget;
-  icon: LucideIcon;
 }) {
   return (
-    <a className="hero-service-link" href={href} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
-      <Icon size={20} aria-hidden="true" />
-      <span>
-        <strong>{title}</strong>
-        <small>{subtitle}</small>
-      </span>
-    </a>
+    <section className="media-hero" aria-label="Домашний сервер">
+      <div className="media-hero-copy">
+        <h1>Домашний сервер</h1>
+        <p>Фильмы, музыка, загрузки и файлы в одном домашнем медиа-хабе.</p>
+        <div className="media-hero-actions">
+          <a className="hub-button hub-button-primary" href={jellyfinUrl} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+            <Play size={18} aria-hidden="true" />
+            Смотреть фильмы
+          </a>
+          <a className="hub-button" href={navidromeUrl} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+            <Music size={18} aria-hidden="true" />
+            Слушать музыку
+          </a>
+          <Link className="hub-button" to="/actions">
+            <Download size={18} aria-hidden="true" />
+            Добавить загрузку
+          </Link>
+        </div>
+      </div>
+      <aside className="media-status-glass">
+        <div className="status-orb" aria-hidden="true" />
+        <strong>{serverLabel}</strong>
+        <span>{loading ? "Проверяем сервер" : status?.status === "ok" ? `${onlineServices} сервисов доступно` : "API недоступен"}</span>
+        <div className="status-mini-grid">
+          <span>
+            <small>CPU</small>
+            <b>{summary?.server.cpu_percent != null ? `${summary.server.cpu_percent}%` : "—"}</b>
+          </span>
+          <span>
+            <small>RAM</small>
+            <b>{summary?.server.memory_percent != null ? `${summary.server.memory_percent}%` : "—"}</b>
+          </span>
+          <span>
+            <small>Диск</small>
+            <b>{summary?.server.disk_percent != null ? `${summary.server.disk_percent}%` : "—"}</b>
+          </span>
+          <span>
+            <small>Загрузки</small>
+            <b>{activeTorrents}</b>
+          </span>
+        </div>
+        {offlineServices > 0 ? <Link to="/admin">Проверить проблемы</Link> : null}
+      </aside>
+    </section>
   );
 }
 
-function ServiceGroupCard({ group, target }: { group: ServiceGroup; target: ServiceTarget }) {
-  const Icon = group.icon;
+function ScenarioPanel({ title, text, icon: Icon, className, meta, actions, target }: ScenarioPanelProps) {
   return (
-    <article className={`service-group-card service-group-${group.accent}`}>
-      <div className="service-group-head">
-        <span className="service-group-icon">
-          <Icon size={24} aria-hidden="true" />
-        </span>
-        <div>
-          <h3>{group.title}</h3>
-          <p>{group.description}</p>
-        </div>
+    <article className={`scenario-panel ${className}`}>
+      <div className="scenario-icon">
+        <Icon size={28} aria-hidden="true" />
       </div>
-      <div className="service-chip-row">
-        {group.services.map((service) => (
-          <span key={service}>{service}</span>
+      <div className="scenario-copy">
+        <h2>{title}</h2>
+        <p>{text}</p>
+      </div>
+      <div className="scenario-meta">
+        {meta.map((item) => (
+          <span key={item}>{item}</span>
         ))}
       </div>
-      <div className="service-group-actions">
-        {group.actions.map((action) =>
+      <div className="scenario-actions">
+        {actions.map((action) =>
           action.to ? (
-            <Link key={action.label} to={action.to}>
+            <Link key={action.label} className={action.primary ? "hub-button hub-button-primary" : "hub-button"} to={action.to}>
               {action.label}
             </Link>
           ) : (
-            <a key={action.label} href={action.href} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+            <a
+              key={action.label}
+              className={action.primary ? "hub-button hub-button-primary" : "hub-button"}
+              href={action.href}
+              target={target}
+              rel={target === "_blank" ? "noreferrer" : undefined}
+            >
               {action.label}
             </a>
           )
@@ -306,29 +260,187 @@ function ServiceGroupCard({ group, target }: { group: ServiceGroup; target: Serv
   );
 }
 
-function ActivityCard({
-  icon: Icon,
-  title,
-  value,
-  detail,
-  to
+function DownloadsHub({
+  active,
+  downSpeed,
+  upSpeed,
+  qbUrl,
+  prowlarrUrl,
+  target
 }: {
-  icon: LucideIcon;
-  title: string;
-  value: string;
-  detail: string;
-  to: string;
+  active: number;
+  downSpeed: number;
+  upSpeed: number;
+  qbUrl: string;
+  prowlarrUrl: string;
+  target: ServiceTarget;
 }) {
   return (
-    <Link className="activity-card" to={to}>
-      <span className="activity-icon">
-        <Icon size={20} aria-hidden="true" />
-      </span>
-      <span>
-        <small>{title}</small>
-        <strong>{value}</strong>
-        <em>{detail}</em>
-      </span>
+    <article className="scenario-panel scenario-downloads">
+      <div className="scenario-icon">
+        <Download size={28} aria-hidden="true" />
+      </div>
+      <div className="scenario-copy">
+        <h2>Скачать</h2>
+        <p>Торренты, YouTube и индексаторы собраны в одном потоке загрузок.</p>
+      </div>
+      <div className="download-live-strip">
+        <span>
+          <small>активные</small>
+          <b>{active}</b>
+        </span>
+        <span>
+          <small>загрузка</small>
+          <b>{formatSpeed(downSpeed)}</b>
+        </span>
+        <span>
+          <small>отдача</small>
+          <b>{formatSpeed(upSpeed)}</b>
+        </span>
+      </div>
+      <div className="scenario-actions">
+        <a className="hub-button hub-button-primary" href={qbUrl} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+          qBittorrent
+        </a>
+        <Link className="hub-button" to="/actions">
+          Скачать YouTube
+        </Link>
+        <a className="hub-button" href={prowlarrUrl} target={target} rel={target === "_blank" ? "noreferrer" : undefined}>
+          Prowlarr
+        </a>
+      </div>
+    </article>
+  );
+}
+
+function NowPlayingFeed({
+  activeTorrents,
+  downloads,
+  events,
+  offlineServices,
+  disk
+}: {
+  activeTorrents: TorrentItem[];
+  downloads: YoutubeDownloadItem[];
+  events: EventItem[];
+  offlineServices: number;
+  disk: number | null | undefined;
+}) {
+  const rows = [
+    {
+      icon: Zap,
+      label: "Торренты",
+      value: activeTorrents[0]?.name ?? "Нет активных загрузок",
+      to: "/downloads"
+    },
+    {
+      icon: Radio,
+      label: "YouTube",
+      value: downloads[0]?.name ?? "Новые загрузки появятся здесь",
+      to: "/actions"
+    },
+    {
+      icon: Bell,
+      label: "События",
+      value: events[0]?.message ?? "Предупреждений сейчас нет",
+      to: "/admin"
+    },
+    {
+      icon: HardDrive,
+      label: "Диск",
+      value: disk != null ? `${disk}% занято` : "Данные о диске загружаются",
+      to: "/admin"
+    }
+  ];
+
+  return (
+    <section className="now-feed" aria-label="Сейчас происходит">
+      <div className="hub-section-title">
+        <h2>Сейчас происходит</h2>
+        <span>{offlineServices > 0 ? `${offlineServices} сервисов требуют внимания` : "спокойный режим"}</span>
+      </div>
+      <div className="now-feed-list">
+        {rows.map((row) => {
+          const Icon = row.icon;
+          return (
+            <Link key={row.label} className="now-feed-row" to={row.to}>
+              <Icon size={18} aria-hidden="true" />
+              <span>
+                <small>{row.label}</small>
+                <strong>{row.value}</strong>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function QuickCommandRail() {
+  return (
+    <section className="quick-command-rail" aria-label="Быстрые команды">
+      <div className="hub-section-title">
+        <h2>Быстрые команды</h2>
+        <span>для загрузок и файлов</span>
+      </div>
+      <div className="quick-command-list">
+        <CommandLink icon={Link2} label="Скачать YouTube" to="/actions" />
+        <CommandLink icon={Download} label="Добавить magnet" to="/actions" />
+        <CommandLink icon={Upload} label="Загрузить .torrent" to="/actions" />
+        <CommandLink icon={Folder} label="Загрузить файл" to="/files" />
+        <CommandLink icon={BookOpen} label="Открыть книги" to="/files" />
+      </div>
+    </section>
+  );
+}
+
+function CommandLink({ icon: Icon, label, to }: { icon: LucideIcon; label: string; to: string }) {
+  return (
+    <Link className="command-link" to={to}>
+      <Icon size={18} aria-hidden="true" />
+      <span>{label}</span>
     </Link>
+  );
+}
+
+function MaintenancePanel({
+  offlineServices,
+  onlineServices,
+  status
+}: {
+  offlineServices: number;
+  onlineServices: number;
+  status: string | undefined;
+}) {
+  return (
+    <section className="maintenance-panel" aria-label="Обслуживание">
+      <div className="hub-section-title">
+        <h2>Обслуживание</h2>
+        <span>второй уровень</span>
+      </div>
+      <div className="maintenance-body">
+        <div>
+          <Server size={22} aria-hidden="true" />
+          <strong>{status === "ok" ? "API работает" : "API недоступен"}</strong>
+          <small>{onlineServices} сервисов доступно</small>
+        </div>
+        <div>
+          <ShieldCheck size={22} aria-hidden="true" />
+          <strong>{offlineServices > 0 ? "нужно внимание" : "без критичных проблем"}</strong>
+          <small>Docker, события, уведомления</small>
+        </div>
+      </div>
+      <div className="scenario-actions">
+        <Link className="hub-button hub-button-primary" to="/admin">
+          <Activity size={17} aria-hidden="true" />
+          Мониторинг
+        </Link>
+        <Link className="hub-button" to="/settings">
+          <Settings size={17} aria-hidden="true" />
+          Настройки
+        </Link>
+      </div>
+    </section>
   );
 }

@@ -54,11 +54,11 @@ type AdminPageProps = {
 const tabs: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Состояние сервера" },
   { id: "monitoring", label: "Мониторинг" },
-  { id: "downloads", label: "Загрузки" },
-  { id: "files", label: "Файлы" },
+  { id: "downloads", label: "Очередь" },
+  { id: "files", label: "Хранилище" },
   { id: "services", label: "Сервисы" },
   { id: "events", label: "События" },
-  { id: "settings", label: "Настройки" }
+  { id: "settings", label: "Уведомления" }
 ];
 
 export function AdminPage({ token, services, status, loading, onRefresh, onNotice }: AdminPageProps) {

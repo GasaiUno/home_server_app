@@ -32,7 +32,7 @@ export function FilesPage({ token, onNotice }: FilesPageProps) {
 
   return (
     <>
-      <PageHeader kicker="домашнее хранилище" title="Файлы" subtitle="Медиа, музыка, книги, YouTube-загрузки и заметки." />
+      <PageHeader kicker="домашнее хранилище" title="Файлы" subtitle="Медиа, музыка, книги, YouTube-загрузки и документы." />
       <FileBrowser token={token} data={files} path={path} loading={loading} onNavigate={setPath} onRefresh={loadFiles} onNotice={onNotice} />
     </>
   );

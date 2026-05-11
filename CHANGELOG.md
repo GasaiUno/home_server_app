@@ -3,10 +3,10 @@
 ## v0.2.3
 
 ### Added
-- New Dark Liquid Control visual direction.
+- New media-hub visual direction for the home server.
 - Refined mobile-first app shell.
 - Glass-style bottom navigation.
-- Bento-style service sections.
+- Asymmetric media sections for films, music, downloads and files.
 - Improved page headers and status cards.
 - More polished loading, empty and error states.
 - Better responsive layouts for mobile and desktop.
@@ -25,17 +25,16 @@
 - Updated UI styling and component system.
 - Reduced generic admin-panel feeling.
 - Improved consistency across pages.
-- Rebuilt Home page around actual home server services.
-- Replaced generic dashboard layout with service-oriented home cockpit.
+- Rebuilt Home page as a Russian media hub around Jellyfin, Navidrome, qBittorrent, MeTube and File Browser.
+- Replaced generic dashboard layout with an asymmetric media-first home screen.
 - Localized main UI labels to Russian.
-- Reworked navigation labels.
+- Reworked navigation so Actions is a command instead of a main tab.
 - Reworked Home service groups:
-  - Фильмы и сериалы;
-  - Музыка;
-  - Загрузки;
+  - Смотреть;
+  - Слушать;
+  - Скачать;
   - Файлы;
-  - Автоматизация;
-  - Администрирование.
+  - Обслуживание.
 
 ## v0.2.2
 

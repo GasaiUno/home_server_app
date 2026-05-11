@@ -34,7 +34,7 @@ export function TorrentUploadDropzone({ token, onNotice, onUploaded }: TorrentUp
   }
 
   return (
-    <section className="panel action-form">
+    <section className="panel action-form command-form command-torrent-file">
       <div className="form-title-row">
         <h2>Загрузить .torrent</h2>
         <span>файл</span>

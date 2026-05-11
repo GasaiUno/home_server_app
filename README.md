@@ -102,7 +102,8 @@ Frontend открывается на `8091`, backend API на `8090`.
 - Russian-first UI labels
 - refined mobile-first app shell
 - glass-style bottom navigation
-- service groups: Фильмы и сериалы, Музыка, Загрузки, Файлы, Автоматизация, Администрирование
+- asymmetric media-hub layout
+- service groups: Смотреть, Слушать, Скачать, Файлы, Обслуживание
 - polished loading, empty and error states
 - backend/API contracts unchanged
 
@@ -175,13 +176,14 @@ v0.2.2 — security/stability foundation перед v0.3. Версия доба�
 
 ## v0.2.3 — UX/UI Redesign
 
-v0.2.3 перестраивает frontend вокруг реальных сценариев домашнего сервера. Главная страница больше не является абстрактным dashboard: она ведёт к Jellyfin, Navidrome, qBittorrent, MeTube, File Browser, n8n и административным разделам через понятные русскоязычные группы.
+v0.2.3 redesign 2 перестраивает frontend в медиа-хаб домашнего сервера. Главная страница больше не является абстрактным dashboard: первый экран ведёт к Jellyfin, Navidrome и добавлению загрузок, а обслуживание сервера вынесено ниже как вторичный слой.
 
 Принципы дизайна:
 
 - mobile-first;
-- домашняя панель управления вместо generic admin dashboard;
-- сервисные группы по задачам;
+- медиа-хаб вместо generic admin dashboard;
+- сценарии `Смотреть`, `Слушать`, `Скачать`, `Файлы`, `Обслуживание`;
+- асимметричная композиция вместо равномерной сетки карточек;
 - тёмная база;
 - мягкие glass panels;
 - аккуратные glow accents;
