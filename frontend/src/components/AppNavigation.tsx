@@ -47,7 +47,6 @@ export function AppNavigation() {
           onClick={() => setQuickOpen((value) => !value)}
         >
           <Plus size={20} aria-hidden="true" />
-          <strong className="nav-label-short">+</strong>
         </button>
         {quickOpen ? (
           <div className="nav-quick-menu">

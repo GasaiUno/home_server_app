@@ -3531,6 +3531,11 @@ body {
   padding: 0 12px;
 }
 
+.nav-link-center,
+.nav-quick-menu {
+  display: none;
+}
+
 @media (max-width: 1024px) and (min-width: 821px) {
   .app-navigation {
     width: 90px;
@@ -3551,6 +3556,15 @@ body {
     grid-template-columns: 1fr;
     justify-items: center;
     min-height: 58px;
+  }
+
+  .nav-add-desktop {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .nav-add-desktop span {
+    display: none;
   }
 }
 
@@ -3595,19 +3609,18 @@ body {
   }
 
   .nav-link-center {
+    display: grid;
     margin-top: 0;
     border: 1px solid transparent;
-    background: transparent;
-    color: var(--hub-muted);
-    box-shadow: none;
+    background: linear-gradient(135deg, #6d5cff, #22d3a6);
+    color: #05070d;
+    box-shadow: 0 12px 28px rgba(34, 211, 166, 0.24);
   }
 
   .nav-link-center.active {
-    border-color: rgba(232, 238, 255, 0.12);
-    background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.04), transparent),
-      rgba(255, 255, 255, 0.05);
-    color: var(--hub-ink);
+    border-color: rgba(232, 238, 255, 0.22);
+    background: linear-gradient(135deg, #7f72ff, #32e6ba);
+    color: #05070d;
   }
 
   .nav-link-center svg {
@@ -3621,7 +3634,7 @@ body {
   }
 
   .nav-link-center .nav-label-short {
-    display: block;
+    display: none;
   }
 
   .nav-link-desktop-only {
@@ -3637,6 +3650,7 @@ body {
   }
 
   .nav-quick-menu {
+    display: grid;
     right: 0;
     left: auto;
     bottom: calc(100% + 14px);
