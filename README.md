@@ -1,4 +1,4 @@
-# Home Server App v0.2.3
+# Home Server App v0.3.0
 
 Home Server App — лёгкая PWA-панель для домашнего сервера за VPN. Приложение объединяет пользовательский Home Mode и Admin Mode: медиа, файлы, загрузки, мониторинг, сервисы, события и настройки.
 
@@ -6,7 +6,7 @@ Frontend открывается на `8091`, backend API на `8090`.
 
 ## Текущий статус
 
-Реализована версия v0.2.3.
+Реализована версия v0.3.0.
 
 - PWA frontend на React/Vite/TypeScript;
 - FastAPI backend;
@@ -33,10 +33,15 @@ Frontend открывается на `8091`, backend API на `8090`.
 - admin service whitelist foundation;
 - audit log helper;
 - Docker logs foundation для разрешённых сервисов;
-- русифицированный интерфейс v0.2.3;
+- русифицированный интерфейс v0.3.0;
 - главная страница вокруг реальных сервисов домашнего сервера;
 - группы “Фильмы и сериалы”, “Музыка”, “Загрузки”, “Файлы”, “Автоматизация”, “Администрирование”;
 - glass-style mobile navigation.
+- safe Docker service control для whitelisted services;
+- confirm-required start/stop/restart;
+- task history;
+- audit log в Admin UI;
+- Jellyfin/Navidrome overview cards.
 
 ## Roadmap
 
@@ -107,16 +112,17 @@ Frontend открывается на `8091`, backend API на `8090`.
 - polished loading, empty and error states
 - backend/API contracts unchanged
 
-### v0.3 — media overview and service control
+### v0.3.0 — media overview and service control
 
-Запланировано:
+Реализовано:
 
 - Jellyfin overview;
 - Navidrome overview;
 - Docker service whitelist;
 - service logs;
 - safe restart/start/stop для разрешённых контейнеров;
-- task history.
+- task history;
+- audit log UI.
 
 ### v0.3.1 — backups UI
 
@@ -151,15 +157,13 @@ Frontend открывается на `8091`, backend API на `8090`.
 
 ## Следующий этап
 
-Следующий этап разработки — v0.3 foundation:
+Следующий этап разработки — v0.3.1 backups UI:
 
-- service whitelist;
-- безопасный Docker admin layer;
-- logs viewer;
-- confirm-required actions;
-- audit log;
-- запрет произвольных Docker-команд;
-- запрет управления неизвестными контейнерами.
+- create backup;
+- list backups;
+- download backup;
+- delete old backup;
+- scheduled backup status.
 
 ## Что нового в v0.2.2
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.3.0
+
+### Added
+- Safe Docker service control for whitelisted services.
+- Confirm-required start, stop and restart actions.
+- Admin task history foundation.
+- Audit log visibility in the Admin UI.
+- Improved service logs workflow.
+- Jellyfin and Navidrome overview cards.
+
+### Security
+- Unknown services are rejected before Docker access.
+- Protected app containers cannot be stopped or restarted.
+- Dangerous admin actions are written to audit/task history.
+
+### Changed
+- Admin Services tab now acts as the service-control workspace.
+- README roadmap advanced to v0.3.1 backups UI.
+
 ## v0.2.3
 
 ### Added
@@ -127,14 +146,9 @@
 - Service cards.
 - Basic YouTube and magnet actions.
 
-## Next: v0.3.0
+## Next: v0.3.1
 
 Planned:
-- Admin services whitelist.
-- Safe Docker service control.
-- Service logs viewer.
-- Confirm-required restart/start/stop actions.
-- Audit log.
-- Task history foundation.
-- Jellyfin overview.
-- Navidrome overview.
+- Backups UI.
+- Create/list/download/delete backup actions.
+- Scheduled backup status.

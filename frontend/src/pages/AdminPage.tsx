@@ -528,7 +528,7 @@ function OverviewTab({ services, status, loading }: { services: ServiceItem[]; s
       <section className="status-grid" aria-label="Статус сервера">
         <StatusTile icon={Activity} label="API" value={status?.status === "ok" ? "работает" : loading ? "загрузка" : "неизвестно"} />
         <StatusTile icon={Gauge} label="Время работы" value={status ? formatUptime(status.uptime_seconds) : "неизвестно"} />
-        <StatusTile icon={Server} label="Версия" value={status?.version ?? "0.2.3"} />
+        <StatusTile icon={Server} label="Версия" value={status?.version ?? "0.3.0"} />
         <StatusTile icon={Clock3} label="Время сервера" value={formatServerTime(status?.server_time)} />
       </section>
 

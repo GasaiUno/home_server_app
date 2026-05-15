@@ -31,7 +31,7 @@ def test_status_returns_backend_metadata_with_token(client):
     assert response.status_code == 200
     assert payload["status"] == "ok"
     assert payload["app"] == "Home Server App"
-    assert payload["version"] == "0.2.3"
+    assert payload["version"] == "0.3.0"
     assert isinstance(payload["uptime_seconds"], int)
     assert payload["server_time"]
 
