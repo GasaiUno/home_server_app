@@ -3,7 +3,7 @@ import logging
 import docker
 from docker.errors import DockerException, NotFound
 
-from .admin_services import require_admin_service
+from .admin_services import ensure_service_action_allowed, require_admin_service
 from .api_response import ApiError
 
 logger = logging.getLogger(__name__)
@@ -86,3 +86,44 @@ def get_admin_service_logs(name: str, tail: int = 200) -> list[str]:
         ) from exc
     text = raw_logs.decode("utf-8", errors="replace") if isinstance(raw_logs, bytes) else str(raw_logs)
     return text.splitlines()
+
+
+def run_admin_service_action(name: str, action: str, confirm: bool) -> dict:
+    service = ensure_service_action_allowed(name, action)
+    if not confirm:
+        raise ApiError(
+            code="SERVICE_ACTION_CONFIRM_REQUIRED",
+            message="Service action requires explicit confirmation",
+            details={"service": service.key, "action": action},
+            status_code=409,
+        )
+
+    _, container = _get_container_for_service(name)
+    try:
+        if action == "restart":
+            container.restart(timeout=10)
+        elif action == "start":
+            container.start()
+        elif action == "stop":
+            container.stop(timeout=10)
+        else:
+            raise ApiError(
+                code="SERVICE_ACTION_UNKNOWN",
+                message="Unknown service action",
+                details={"service": service.key, "action": action},
+                status_code=400,
+            )
+    except DockerException as exc:
+        raise ApiError(
+            code="DOCKER_ACTION_FAILED",
+            message="Docker action failed",
+            details={"service": service.key, "action": action},
+            status_code=502,
+        ) from exc
+
+    return {
+        "status": "ok",
+        "message": f"{service.display_name}: {action} requested",
+        "service": service.key,
+        "action": action,
+    }

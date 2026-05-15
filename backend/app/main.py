@@ -17,7 +17,7 @@ from .api_response import ApiError, api_error_response, success_response
 from .audit import write_audit_event
 from .config import APP_NAME, APP_VERSION, Settings, get_settings
 from .dashboard_service import get_dashboard_summary
-from .docker_admin import get_admin_service_logs
+from .docker_admin import get_admin_service_logs, run_admin_service_action
 from .events import EventStore
 from .file_service import delete_path, list_files, mkdir, recent_youtube_downloads, safe_resolve_path, upload_file
 from .integrations.metube import add_youtube_download
@@ -26,6 +26,8 @@ from .models import (
     AlertTestResponse,
     ActionResponse,
     AddMagnetRequest,
+    ServiceActionRequest,
+    ServiceActionResponse,
     DashboardSummaryResponse,
     DeleteFileRequest,
     DockerContainersResponse,
@@ -38,6 +40,7 @@ from .models import (
     ServicesHealthResponse,
     ServicesResponse,
     StatusResponse,
+    TaskHistoryResponse,
     TelegramStatus,
     TorrentsResponse,
     WebhookResponse,
@@ -46,6 +49,7 @@ from .models import (
 )
 from .monitoring import check_services_health, collect_server_metrics, get_docker_containers
 from .services import post_magnet_webhook, post_youtube_webhook
+from .task_history import TaskHistoryStore
 from .telegram import send_telegram_message
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -55,6 +59,7 @@ started_at = monotonic()
 started_at_iso = datetime.now(timezone.utc).isoformat()
 settings = get_settings()
 event_store = EventStore(settings.events_path)
+task_history = TaskHistoryStore(Path("app_data/tasks.jsonl"))
 alert_monitor = AlertMonitor(settings, event_store, time.monotonic(), started_at_iso)
 
 
@@ -270,6 +275,40 @@ def admin_service_logs_endpoint(
         return api_error_response(exc)
     write_audit_event("service.logs.view", service=name, result="success", details={"tail": max(10, min(int(tail), 1000))})
     return success_response({"service": name, "tail": max(10, min(int(tail), 1000)), "logs": logs})
+
+
+@app.post("/api/admin/services-registry/{name}/actions")
+def admin_service_action_endpoint(
+    name: str,
+    payload: ServiceActionRequest,
+    _: Settings = Depends(require_token),
+) -> ServiceActionResponse | dict:
+    try:
+        result = run_admin_service_action(name, payload.action, payload.confirm)
+    except ApiError as exc:
+        task_history.add_task(
+            action=f"service.{payload.action}",
+            service=name,
+            status="failed",
+            message=exc.message,
+            details={"code": exc.code},
+        )
+        write_audit_event(f"service.{payload.action}", service=name, result="failed", details={"code": exc.code})
+        return api_error_response(exc)
+
+    task = task_history.add_task(
+        action=f"service.{payload.action}",
+        service=name,
+        status="success",
+        message=result["message"],
+    )
+    write_audit_event(f"service.{payload.action}", service=name, result="success")
+    return ServiceActionResponse(**result, task_id=task["id"])
+
+
+@app.get("/api/admin/tasks", response_model=TaskHistoryResponse)
+def admin_tasks_endpoint(_: Settings = Depends(require_token)) -> TaskHistoryResponse:
+    return TaskHistoryResponse(tasks=task_history.list_tasks())
 
 
 @app.get("/api/admin/events", response_model=EventsResponse)
