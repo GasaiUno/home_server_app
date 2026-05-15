@@ -178,6 +178,8 @@ ADMIN_SERVICES: dict[str, AdminServiceConfig] = {
     ),
 }
 
+SERVICE_ACTIONS = {"start", "stop", "restart"}
+
 
 def list_admin_services_config() -> list[AdminServiceConfig]:
     return list(ADMIN_SERVICES.values())
@@ -201,5 +203,36 @@ def require_admin_service(name: str) -> AdminServiceConfig:
             message="Service is not allowed for admin operations",
             details={"service": name},
             status_code=404,
+        )
+    return service
+
+
+def ensure_service_action_allowed(name: str, action: str) -> AdminServiceConfig:
+    if action not in SERVICE_ACTIONS:
+        raise ApiError(
+            code="SERVICE_ACTION_UNKNOWN",
+            message="Unknown service action",
+            details={"service": name, "action": action},
+            status_code=400,
+        )
+
+    service = require_admin_service(name)
+    allowed = {
+        "start": service.allow_start,
+        "stop": service.allow_stop,
+        "restart": service.allow_restart,
+    }[action]
+    if not allowed:
+        write_audit_event(
+            action=f"service.{action}.denied",
+            service=service.key,
+            result="forbidden",
+            details={"code": "SERVICE_ACTION_NOT_ALLOWED"},
+        )
+        raise ApiError(
+            code="SERVICE_ACTION_NOT_ALLOWED",
+            message="Action is not allowed for this service",
+            details={"service": service.key, "action": action},
+            status_code=403,
         )
     return service

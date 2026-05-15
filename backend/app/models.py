@@ -145,6 +145,49 @@ class ServicesHealthResponse(BaseModel):
     services: list[ServiceHealthItem]
 
 
+ServiceAction = Literal["start", "stop", "restart"]
+
+
+class ServiceActionRequest(BaseModel):
+    action: ServiceAction
+    confirm: bool = False
+
+
+class ServiceActionResponse(BaseModel):
+    status: str
+    message: str
+    service: str
+    action: ServiceAction
+    task_id: str
+
+
+class TaskHistoryItem(BaseModel):
+    id: str
+    action: str
+    service: str | None
+    status: str
+    message: str
+    created_at: str
+    finished_at: str | None = None
+    details: dict = Field(default_factory=dict)
+
+
+class TaskHistoryResponse(BaseModel):
+    tasks: list[TaskHistoryItem]
+
+
+class AuditEventItem(BaseModel):
+    ts: str
+    action: str
+    service: str | None = None
+    result: str
+    details: dict = Field(default_factory=dict)
+
+
+class AuditEventsResponse(BaseModel):
+    events: list[AuditEventItem]
+
+
 class EventItem(BaseModel):
     id: str
     level: str

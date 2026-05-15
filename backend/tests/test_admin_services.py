@@ -1,6 +1,7 @@
 import pytest
 
-from app.admin_services import get_admin_service, list_admin_services_config, require_admin_service
+from app.admin_services import ensure_service_action_allowed, get_admin_service, list_admin_services_config, require_admin_service
+from app.api_response import ApiError
 from app.docker_admin import clamp_log_tail
 
 
@@ -34,3 +35,23 @@ def test_registry_contains_expected_services():
 
 def test_registry_services_have_container_names():
     assert all(service.container_name for service in list_admin_services_config())
+
+
+def test_allowed_service_action_passes():
+    service = ensure_service_action_allowed("jellyfin", "restart")
+
+    assert service.key == "jellyfin"
+
+
+def test_protected_backend_restart_is_rejected():
+    with pytest.raises(ApiError) as exc_info:
+        ensure_service_action_allowed("homeapp-backend", "restart")
+
+    assert exc_info.value.code == "SERVICE_ACTION_NOT_ALLOWED"
+
+
+def test_unknown_action_is_rejected():
+    with pytest.raises(ApiError) as exc_info:
+        ensure_service_action_allowed("jellyfin", "destroy")
+
+    assert exc_info.value.code == "SERVICE_ACTION_UNKNOWN"
