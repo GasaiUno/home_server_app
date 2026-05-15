@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .alerts import AlertMonitor
 from .admin_services import list_admin_services_config, require_admin_service
 from .api_response import ApiError, api_error_response, success_response
-from .audit import write_audit_event
+from .audit import list_audit_events, write_audit_event
 from .config import APP_NAME, APP_VERSION, Settings, get_settings
 from .dashboard_service import get_dashboard_summary
 from .docker_admin import get_admin_service_logs, run_admin_service_action
@@ -26,6 +26,7 @@ from .models import (
     AlertTestResponse,
     ActionResponse,
     AddMagnetRequest,
+    AuditEventsResponse,
     ServiceActionRequest,
     ServiceActionResponse,
     DashboardSummaryResponse,
@@ -309,6 +310,11 @@ def admin_service_action_endpoint(
 @app.get("/api/admin/tasks", response_model=TaskHistoryResponse)
 def admin_tasks_endpoint(_: Settings = Depends(require_token)) -> TaskHistoryResponse:
     return TaskHistoryResponse(tasks=task_history.list_tasks())
+
+
+@app.get("/api/admin/audit", response_model=AuditEventsResponse)
+def admin_audit_endpoint(_: Settings = Depends(require_token)) -> AuditEventsResponse:
+    return AuditEventsResponse(events=list_audit_events())
 
 
 @app.get("/api/admin/events", response_model=EventsResponse)

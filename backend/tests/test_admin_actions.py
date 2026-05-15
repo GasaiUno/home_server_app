@@ -4,6 +4,7 @@ import pytest
 
 from app.admin_services import ensure_service_action_allowed
 from app.api_response import ApiError
+from app.audit import list_audit_events, write_audit_event
 from app.docker_admin import run_admin_service_action
 from app.task_history import TaskHistoryStore
 
@@ -53,3 +54,16 @@ def test_restart_calls_container_restart(monkeypatch):
 
     assert fake.calls == [("restart", 10)]
     assert result["status"] == "ok"
+
+
+def test_audit_events_are_listed_latest_first(tmp_path: Path, monkeypatch):
+    audit_path = tmp_path / "audit.jsonl"
+    monkeypatch.setattr("app.audit.AUDIT_LOG_PATH", audit_path)
+
+    write_audit_event("service.restart", service="jellyfin", result="success")
+    write_audit_event("service.stop", service="navidrome", result="failed", details={"code": "X"})
+
+    events = list_audit_events()
+
+    assert events[0]["action"] == "service.stop"
+    assert events[0]["details"] == {"code": "X"}
