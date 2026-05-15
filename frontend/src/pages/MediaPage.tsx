@@ -11,7 +11,7 @@ import {
   searchMusic
 } from "../api";
 import type { JellyfinLibraryItem, JellyfinMediaItem, MusicAlbumItem, MusicArtistItem, ServiceItem, ServiceTarget } from "../types";
-import { findServiceUrl, getErrorMessage } from "../utils";
+import { findServiceUrl, getApiErrorCode, getErrorMessage } from "../utils";
 
 type MediaPageProps = {
   token: string;
@@ -32,10 +32,14 @@ export function MediaPage({ token, services, serviceTarget, onNotice }: MediaPag
   const [searchScope, setSearchScope] = useState<"jellyfin" | "navidrome">("jellyfin");
   const [jellyfinResults, setJellyfinResults] = useState<JellyfinMediaItem[]>([]);
   const [musicResults, setMusicResults] = useState<{ albums: MusicAlbumItem[]; artists: MusicArtistItem[] }>({ albums: [], artists: [] });
+  const [jellyfinConfigNotice, setJellyfinConfigNotice] = useState("");
+  const [navidromeConfigNotice, setNavidromeConfigNotice] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
+    setJellyfinConfigNotice("");
+    setNavidromeConfigNotice("");
     void Promise.allSettled([
       getJellyfinLibraries(token),
       getJellyfinRecent(token, "Movie"),
@@ -54,9 +58,27 @@ export function MediaPage({ token, services, serviceTarget, onNotice }: MediaPag
         if (results[5].status === "fulfilled") setArtists(results[5].value.artists.slice(0, 24));
         if (results[6].status === "fulfilled") setAlbums(results[6].value.albums);
 
-        const rejected = results.find((result) => result.status === "rejected");
-        if (rejected?.status === "rejected") {
-          onNotice({ type: "error", message: `Медиа API недоступен: ${getErrorMessage(rejected.reason)}` });
+        const jellyfinRejected = results.slice(0, 4).find((result) => result.status === "rejected");
+        const navidromeRejected = results.slice(4).find((result) => result.status === "rejected");
+
+        if (jellyfinRejected?.status === "rejected") {
+          const code = getApiErrorCode(jellyfinRejected.reason);
+          if (code === "JELLYFIN_NOT_CONFIGURED") {
+            setJellyfinConfigNotice("Для обзора Jellyfin задайте JELLYFIN_API_KEY. До настройки раздел останется пустым, но страница продолжит работать.");
+          } else {
+            onNotice({ type: "error", message: `Jellyfin API недоступен: ${getErrorMessage(jellyfinRejected.reason)}` });
+          }
+        }
+
+        if (navidromeRejected?.status === "rejected") {
+          const code = getApiErrorCode(navidromeRejected.reason);
+          if (code === "NAVIDROME_NOT_CONFIGURED") {
+            setNavidromeConfigNotice(
+              "Для обзора Navidrome задайте NAVIDROME_USERNAME и NAVIDROME_PASSWORD. До настройки музыкальные блоки останутся пустыми."
+            );
+          } else {
+            onNotice({ type: "error", message: `Navidrome API недоступен: ${getErrorMessage(navidromeRejected.reason)}` });
+          }
         }
       })
       .finally(() => setLoading(false));
@@ -75,6 +97,15 @@ export function MediaPage({ token, services, serviceTarget, onNotice }: MediaPag
         setMusicResults(payload);
       }
     } catch (error) {
+      const code = getApiErrorCode(error);
+      if (code === "JELLYFIN_NOT_CONFIGURED") {
+        setJellyfinConfigNotice("Для поиска Jellyfin задайте JELLYFIN_API_KEY.");
+        return;
+      }
+      if (code === "NAVIDROME_NOT_CONFIGURED") {
+        setNavidromeConfigNotice("Для поиска Navidrome задайте NAVIDROME_USERNAME и NAVIDROME_PASSWORD.");
+        return;
+      }
       onNotice({ type: "error", message: `Поиск не выполнен: ${getErrorMessage(error)}` });
     }
   }
@@ -133,6 +164,7 @@ export function MediaPage({ token, services, serviceTarget, onNotice }: MediaPag
           ))}
           {!libraries.length ? <EmptyState text="Библиотеки пока не получены" /> : null}
         </div>
+        {jellyfinConfigNotice ? <p className="media-config-note">{jellyfinConfigNotice}</p> : null}
         <PosterRail title="Продолжить просмотр" items={resume} compact />
         <PosterRail title="Недавно добавленные фильмы" items={movies} />
         <PosterRail title="Недавно добавленные сериалы" items={series} />
@@ -143,6 +175,7 @@ export function MediaPage({ token, services, serviceTarget, onNotice }: MediaPag
           <h2>Navidrome overview</h2>
           <span>{loading ? "загрузка" : `${albums.length} альбомов`}</span>
         </div>
+        {navidromeConfigNotice ? <p className="media-config-note">{navidromeConfigNotice}</p> : null}
         <AlbumRail title="Недавно добавленные альбомы" albums={recentAlbums} />
         <ArtistGrid artists={artists} />
         <AlbumRail title="Альбомы" albums={albums} />

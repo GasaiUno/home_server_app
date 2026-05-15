@@ -16,6 +16,12 @@ services:
       QB_PASSWORD: ${QB_PASSWORD:-}
       QB_BYPASS_AUTH: ${QB_BYPASS_AUTH:-true}
       METUBE_URL: ${METUBE_URL:-http://metube:8081}
+      JELLYFIN_URL: ${JELLYFIN_URL:-http://jellyfin:8096}
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY:-}
+      NAVIDROME_URL: ${NAVIDROME_URL:-http://navidrome:4533}
+      NAVIDROME_USERNAME: ${NAVIDROME_USERNAME:-}
+      NAVIDROME_PASSWORD: ${NAVIDROME_PASSWORD:-}
+      NAVIDROME_SALT: ${NAVIDROME_SALT:-home-server-app}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8091}
       HOST_ROOT_PATH: ${HOST_ROOT_PATH:-/host}
       HOST_PROC_PATH: ${HOST_PROC_PATH:-/host/proc}

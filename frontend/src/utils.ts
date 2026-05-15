@@ -72,6 +72,18 @@ export function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Неизвестная ошибка";
 }
 
+export function getApiErrorCode(error: unknown): string | null {
+  if (!(error instanceof Error)) {
+    return null;
+  }
+  try {
+    const payload = JSON.parse(error.message) as { error?: { code?: string } };
+    return payload.error?.code ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function findServiceUrl(services: { id: string; url: string }[], id: string): string {
   return services.find((service) => service.id === id)?.url ?? "#";
 }
