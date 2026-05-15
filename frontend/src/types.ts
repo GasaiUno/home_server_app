@@ -107,6 +107,43 @@ export type ApiEnvelope<T> = {
   data: T;
 };
 
+export type ServiceAction = "start" | "stop" | "restart";
+
+export type ServiceActionResponse = {
+  status: string;
+  message: string;
+  service: string;
+  action: ServiceAction;
+  task_id: string;
+};
+
+export type TaskHistoryItem = {
+  id: string;
+  action: string;
+  service: string | null;
+  status: string;
+  message: string;
+  created_at: string;
+  finished_at: string | null;
+  details: Record<string, unknown>;
+};
+
+export type AuditEventItem = {
+  ts: string;
+  action: string;
+  service: string | null;
+  result: string;
+  details: Record<string, unknown>;
+};
+
+export type MediaOverviewService = {
+  key: string;
+  name: string;
+  url: string | null;
+  online: boolean;
+  status: string | null;
+};
+
 export type EventItem = {
   id: string;
   level: string;

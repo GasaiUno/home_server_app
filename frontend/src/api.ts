@@ -1,15 +1,20 @@
 import type {
   AdminRegistryService,
   ApiEnvelope,
+  AuditEventItem,
   DockerContainer,
   EventItem,
   DashboardSummary,
   FileItem,
   FilesListResponse,
+  MediaOverviewService,
   ServerMetrics,
+  ServiceAction,
+  ServiceActionResponse,
   ServiceHealthItem,
   ServicesResponse,
   StatusResponse,
+  TaskHistoryItem,
   TelegramStatus,
   TorrentItem,
   YoutubeDownloadItem
@@ -160,6 +165,35 @@ export async function getAdminServiceLogs(token: string, name: string, tail = 20
     token
   );
   return response.data;
+}
+
+export async function runAdminServiceAction(
+  token: string,
+  name: string,
+  action: ServiceAction,
+  confirm: boolean
+): Promise<ServiceActionResponse> {
+  const response = await request<ApiEnvelope<ServiceActionResponse>>(
+    `/api/admin/services-registry/${encodeURIComponent(name)}/actions`,
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify({ action, confirm })
+    }
+  );
+  return response.data;
+}
+
+export function getAdminTasks(token: string): Promise<{ tasks: TaskHistoryItem[] }> {
+  return request<{ tasks: TaskHistoryItem[] }>("/api/admin/tasks", token);
+}
+
+export function getAdminAudit(token: string): Promise<{ events: AuditEventItem[] }> {
+  return request<{ events: AuditEventItem[] }>("/api/admin/audit", token);
+}
+
+export function getMediaOverview(token: string): Promise<{ services: MediaOverviewService[] }> {
+  return request<{ services: MediaOverviewService[] }>("/api/media/overview", token);
 }
 
 export function getAdminEvents(token: string): Promise<{ events: EventItem[]; telegram: TelegramStatus }> {
