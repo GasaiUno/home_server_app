@@ -13,6 +13,7 @@ import {
   getTorrents,
   pauseTorrent,
   resumeTorrent,
+  runAdminServiceAction,
   sendTestTelegramAlert
 } from "../api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -21,6 +22,7 @@ import { EventsTimeline } from "../components/EventsTimeline";
 import { FileBrowser } from "../components/FileBrowser";
 import { MetricsGrid } from "../components/MetricsGrid";
 import { PageHeader } from "../components/PageHeader";
+import { ServiceControlPanel } from "../components/ServiceControlPanel";
 import { ServicesHealthTable } from "../components/ServicesHealthTable";
 import { TelegramAlertsStatus } from "../components/TelegramAlertsStatus";
 import { TestTelegramAlertButton } from "../components/TestTelegramAlertButton";
@@ -32,6 +34,7 @@ import type {
   Notice,
   ServerMetrics,
   FilesListResponse,
+  ServiceAction,
   ServiceHealthItem,
   ServiceItem,
   StatusResponse,
@@ -81,6 +84,7 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
   const [logsService, setLogsService] = useState<AdminRegistryService | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [pendingServiceAction, setPendingServiceAction] = useState<{ service: AdminRegistryService; action: ServiceAction } | null>(null);
 
   const loadMonitoring = useCallback(async () => {
     setMonitoringLoading(true);
@@ -230,6 +234,20 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     }
   }
 
+  async function confirmServiceAction() {
+    if (!pendingServiceAction) return;
+    const { service, action } = pendingServiceAction;
+    try {
+      const response = await runAdminServiceAction(token, service.key, action, true);
+      onNotice({ type: "success", message: response.message });
+      setPendingServiceAction(null);
+      await loadRegistry();
+      await loadMonitoring();
+    } catch (error) {
+      onNotice({ type: "error", message: `Действие не выполнено: ${getErrorMessage(error)}` });
+    }
+  }
+
   return (
     <>
       <div className="admin-header-row">
@@ -305,7 +323,12 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           onNotice={onNotice}
         />
       ) : activeTab === "services" ? (
-        <ServicesFoundationPanel services={registry} loading={registryLoading} health={health} onViewLogs={(service) => void openServiceLogs(service)} />
+        <ServiceControlPanel
+          services={registry}
+          loading={registryLoading}
+          onViewLogs={(service) => void openServiceLogs(service)}
+          onRunAction={(service, action) => setPendingServiceAction({ service, action })}
+        />
       ) : activeTab === "events" ? (
         <EventsTimeline events={events} />
       ) : (
@@ -318,6 +341,15 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           confirmLabel="Удалить"
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDeleteTorrent}
+        />
+      ) : null}
+      {pendingServiceAction ? (
+        <ConfirmDialog
+          title={`${pendingServiceAction.action} ${pendingServiceAction.service.display_name}?`}
+          text="Действие будет отправлено напрямую в Docker API и записано в audit/task history."
+          confirmLabel="Подтвердить"
+          onCancel={() => setPendingServiceAction(null)}
+          onConfirm={confirmServiceAction}
         />
       ) : null}
       {logsService ? (

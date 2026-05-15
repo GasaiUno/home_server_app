@@ -3540,6 +3540,40 @@ body {
   display: none;
 }
 
+.registry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.compact-button {
+  min-height: 38px;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 14px;
+}
+
+.danger-inline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 118, 118, 0.28);
+  background: rgba(255, 118, 118, 0.12);
+  color: #ffb4b4;
+  font-weight: 900;
+}
+
+@media (max-width: 700px) {
+  .registry-actions {
+    justify-content: stretch;
+  }
+
+  .registry-actions > * {
+    flex: 1 1 120px;
+  }
+}
+
 @media (max-width: 1024px) and (min-width: 821px) {
   .app-layout {
     grid-template-columns: 90px minmax(0, 1fr);
