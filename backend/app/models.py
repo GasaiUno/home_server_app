@@ -188,6 +188,18 @@ class AuditEventsResponse(BaseModel):
     events: list[AuditEventItem]
 
 
+class MediaOverviewService(BaseModel):
+    key: str
+    name: str
+    url: str | None
+    online: bool
+    status: str | None = None
+
+
+class MediaOverviewResponse(BaseModel):
+    services: list[MediaOverviewService]
+
+
 class EventItem(BaseModel):
     id: str
     level: str

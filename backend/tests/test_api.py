@@ -160,3 +160,9 @@ def test_admin_test_alert_without_telegram_config_does_not_fail(client):
 
     assert response.status_code == 200
     assert payload["status"] in {"sent", "disabled"}
+
+
+def test_media_overview_requires_token(client):
+    response = client.get("/api/media/overview")
+
+    assert response.status_code == 401

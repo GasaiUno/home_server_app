@@ -22,6 +22,7 @@ from .events import EventStore
 from .file_service import delete_path, list_files, mkdir, recent_youtube_downloads, safe_resolve_path, upload_file
 from .integrations.metube import add_youtube_download
 from .integrations.qbittorrent import QBittorrentClient
+from .media_overview import get_media_overview
 from .models import (
     AlertTestResponse,
     ActionResponse,
@@ -36,6 +37,7 @@ from .models import (
     FileItem,
     FilesListResponse,
     MagnetRequest,
+    MediaOverviewResponse,
     MkdirRequest,
     ServerMetricsResponse,
     ServicesHealthResponse,
@@ -120,6 +122,11 @@ def services_endpoint(current_settings: Settings = Depends(require_token)) -> Se
 @app.get("/api/dashboard/summary", response_model=DashboardSummaryResponse)
 async def dashboard_summary_endpoint(current_settings: Settings = Depends(require_token)) -> DashboardSummaryResponse:
     return await get_dashboard_summary(current_settings, started_at, started_at_iso)
+
+
+@app.get("/api/media/overview", response_model=MediaOverviewResponse)
+def media_overview_endpoint(_: Settings = Depends(require_token)) -> MediaOverviewResponse:
+    return MediaOverviewResponse(**get_media_overview())
 
 
 @app.get("/api/torrents", response_model=TorrentsResponse)
