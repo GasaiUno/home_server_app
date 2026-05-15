@@ -1,4 +1,5 @@
-from app.integrations.jellyfin import map_jellyfin_items, map_jellyfin_libraries
+from app.config import get_settings
+from app.integrations.jellyfin import build_jellyfin_items_request, map_jellyfin_items, map_jellyfin_libraries
 from app.integrations.navidrome import map_navidrome_albums, map_navidrome_artists
 
 
@@ -40,6 +41,41 @@ def test_maps_jellyfin_items_with_poster_urls():
     assert items[0]["progress_percent"] == 42
     assert items[0]["poster_url"].startswith("http://media.local/Items/abc/Images/Primary")
     assert "api_key=secret" in items[0]["poster_url"]
+
+
+def test_builds_safe_jellyfin_item_query_without_invalid_fields(monkeypatch):
+    monkeypatch.setenv("HOME_APP_TOKEN", "test-token")
+    get_settings.cache_clear()
+    settings = get_settings()
+
+    path, params = build_jellyfin_items_request(settings, item_type="Movie")
+
+    assert path == "/Items"
+    assert params["IncludeItemTypes"] == "Movie"
+    assert params["Fields"] == "PrimaryImageAspectRatio,DateCreated,Overview"
+    assert "RunTimeTicks" not in str(params)
+
+
+def test_resume_query_requires_jellyfin_user_id(monkeypatch):
+    monkeypatch.setenv("HOME_APP_TOKEN", "test-token")
+    monkeypatch.delenv("JELLYFIN_USER_ID", raising=False)
+    get_settings.cache_clear()
+
+    path, params = build_jellyfin_items_request(get_settings(), mode="resume")
+
+    assert path == ""
+    assert params == {}
+
+
+def test_resume_query_uses_jellyfin_user_endpoint(monkeypatch):
+    monkeypatch.setenv("HOME_APP_TOKEN", "test-token")
+    monkeypatch.setenv("JELLYFIN_USER_ID", "user-1")
+    get_settings.cache_clear()
+
+    path, params = build_jellyfin_items_request(get_settings(), mode="resume")
+
+    assert path == "/Users/user-1/Items/Resume"
+    assert params["Fields"] == "PrimaryImageAspectRatio,DateCreated,Overview"
 
 
 def test_maps_navidrome_albums_and_artists():

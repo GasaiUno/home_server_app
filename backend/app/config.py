@@ -114,6 +114,7 @@ class Settings(BaseModel):
     metube_url: str
     jellyfin_url: str
     jellyfin_api_key: str | None
+    jellyfin_user_id: str | None
     navidrome_url: str
     navidrome_username: str | None
     navidrome_password: str | None
@@ -199,6 +200,7 @@ def get_settings() -> Settings:
         metube_url=getenv("METUBE_URL", "http://metube:8081"),
         jellyfin_url=getenv("JELLYFIN_URL", "http://jellyfin:8096"),
         jellyfin_api_key=_get_optional("JELLYFIN_API_KEY"),
+        jellyfin_user_id=_get_optional("JELLYFIN_USER_ID"),
         navidrome_url=getenv("NAVIDROME_URL", "http://navidrome:4533"),
         navidrome_username=_get_optional("NAVIDROME_USERNAME"),
         navidrome_password=_get_optional("NAVIDROME_PASSWORD"),

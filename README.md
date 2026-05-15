@@ -287,7 +287,7 @@ cp .env.example .env
 - `ALERT_COOLDOWN_SECONDS` - cooldown одинаковых событий.
 - `QB_URL`, `QB_USERNAME`, `QB_PASSWORD`, `QB_BYPASS_AUTH` - доступ к qBittorrent API.
 - `METUBE_URL` - URL MeTube API.
-- `JELLYFIN_URL`, `JELLYFIN_API_KEY` - доступ backend к Jellyfin API для страницы `/media`.
+- `JELLYFIN_URL`, `JELLYFIN_API_KEY`, `JELLYFIN_USER_ID` - доступ backend к Jellyfin API для страницы `/media`; `JELLYFIN_USER_ID` нужен для блока “Продолжить просмотр”.
 - `NAVIDROME_URL`, `NAVIDROME_USERNAME`, `NAVIDROME_PASSWORD`, `NAVIDROME_SALT` - доступ backend к Navidrome/Subsonic API для страницы `/media`.
 - `MEDIA_PATH`, `MUSIC_PATH`, `TORRENTS_PATH`, `YOUTUBE_PATH`, `BOOKS_PATH` - разрешённые папки внутри backend-контейнера.
 - `ALLOW_FILE_DELETE` - включает удаление файлов через Admin Files.
