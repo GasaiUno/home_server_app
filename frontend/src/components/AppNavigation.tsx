@@ -66,6 +66,9 @@ export function AppNavigation() {
             <Link to="/files" onClick={() => setQuickOpen(false)}>
               Создать папку
             </Link>
+            <Link to="/settings" onClick={() => setQuickOpen(false)}>
+              Настройки
+            </Link>
           </div>
         ) : null}
       </div>

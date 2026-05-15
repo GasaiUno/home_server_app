@@ -11,3 +11,4 @@ htmlcov/
 .coverage
 backend/app_data/events.json
 backend/app_data/audit.jsonl
+/.superpowers/
