@@ -166,3 +166,22 @@ def test_media_overview_requires_token(client):
     response = client.get("/api/media/overview")
 
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/media/jellyfin/libraries",
+        "/api/media/jellyfin/recent",
+        "/api/media/jellyfin/items",
+        "/api/media/jellyfin/search?q=matrix",
+        "/api/music/recent",
+        "/api/music/artists",
+        "/api/music/albums",
+        "/api/music/search?q=radiohead",
+    ],
+)
+def test_media_catalog_endpoints_require_token(client, path):
+    response = client.get(path)
+
+    assert response.status_code == 401

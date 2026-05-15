@@ -144,6 +144,39 @@ export type MediaOverviewService = {
   status: string | null;
 };
 
+export type JellyfinLibraryItem = {
+  id: string;
+  name: string;
+  collection_type: string | null;
+};
+
+export type JellyfinMediaItem = {
+  id: string;
+  title: string;
+  kind: string;
+  year: number | null;
+  overview: string | null;
+  date_created: string | null;
+  runtime_ticks: number | null;
+  progress_percent: number | null;
+  poster_url: string | null;
+};
+
+export type MusicAlbumItem = {
+  id: string;
+  title: string;
+  artist: string | null;
+  year: number | null;
+  created: string | null;
+  cover_url: string | null;
+};
+
+export type MusicArtistItem = {
+  id: string;
+  name: string;
+  album_count: number | null;
+};
+
 export type EventItem = {
   id: string;
   level: string;

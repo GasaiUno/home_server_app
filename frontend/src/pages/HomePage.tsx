@@ -20,11 +20,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAdminEvents, getDashboardSummary, getMediaOverview, getTorrents, getYoutubeDownloads } from "../api";
+import { getAdminEvents, getDashboardSummary, getTorrents, getYoutubeDownloads } from "../api";
 import type {
   DashboardSummary,
   EventItem,
-  MediaOverviewService,
   ServiceItem,
   ServiceTarget,
   StatusResponse,
@@ -69,15 +68,13 @@ export function HomePage({ token, services, status, loading, serviceTarget }: Ho
   const [torrents, setTorrents] = useState<TorrentItem[]>([]);
   const [downloads, setDownloads] = useState<YoutubeDownloadItem[]>([]);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [mediaServices, setMediaServices] = useState<MediaOverviewService[]>([]);
 
   useEffect(() => {
-    void Promise.allSettled([getDashboardSummary(token), getTorrents(token), getYoutubeDownloads(token), getAdminEvents(token), getMediaOverview(token)]).then((results) => {
+    void Promise.allSettled([getDashboardSummary(token), getTorrents(token), getYoutubeDownloads(token), getAdminEvents(token)]).then((results) => {
       if (results[0].status === "fulfilled") setSummary(results[0].value);
       if (results[1].status === "fulfilled") setTorrents(results[1].value.items);
       if (results[2].status === "fulfilled") setDownloads(results[2].value.items);
       if (results[3].status === "fulfilled") setEvents(results[3].value.events);
-      if (results[4].status === "fulfilled") setMediaServices(results[4].value.services);
     });
   }, [token]);
 
@@ -106,22 +103,6 @@ export function HomePage({ token, services, status, loading, serviceTarget }: Ho
         navidromeUrl={serviceUrl("navidrome")}
         target={serviceTarget}
       />
-
-      <section className="media-overview-strip" aria-label="Медиа-сервисы">
-        {mediaServices.map((service) => (
-          <a
-            key={service.key}
-            className="media-overview-card"
-            href={service.url ?? "#"}
-            target={serviceTarget}
-            rel={serviceTarget === "_blank" ? "noreferrer" : undefined}
-          >
-            <span>{service.online ? "online" : "offline"}</span>
-            <strong>{service.name}</strong>
-            <small>{service.status ?? "unknown"}</small>
-          </a>
-        ))}
-      </section>
 
       <section className="media-hub-layout" aria-label="Медиа-хаб">
         <ScenarioPanel

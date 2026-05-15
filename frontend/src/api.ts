@@ -7,7 +7,11 @@ import type {
   DashboardSummary,
   FileItem,
   FilesListResponse,
+  JellyfinLibraryItem,
+  JellyfinMediaItem,
   MediaOverviewService,
+  MusicAlbumItem,
+  MusicArtistItem,
   ServerMetrics,
   ServiceAction,
   ServiceActionResponse,
@@ -194,6 +198,44 @@ export function getAdminAudit(token: string): Promise<{ events: AuditEventItem[]
 
 export function getMediaOverview(token: string): Promise<{ services: MediaOverviewService[] }> {
   return request<{ services: MediaOverviewService[] }>("/api/media/overview", token);
+}
+
+export function getJellyfinLibraries(token: string): Promise<{ libraries: JellyfinLibraryItem[] }> {
+  return request<{ libraries: JellyfinLibraryItem[] }>("/api/media/jellyfin/libraries", token);
+}
+
+export function getJellyfinRecent(token: string, kind?: string): Promise<{ items: JellyfinMediaItem[] }> {
+  const query = kind ? `?type=${encodeURIComponent(kind)}` : "";
+  return request<{ items: JellyfinMediaItem[] }>(`/api/media/jellyfin/recent${query}`, token);
+}
+
+export function getJellyfinItems(token: string, params: { type?: string; mode?: string; limit?: number } = {}): Promise<{ items: JellyfinMediaItem[] }> {
+  const query = new URLSearchParams();
+  if (params.type) query.set("type", params.type);
+  if (params.mode) query.set("mode", params.mode);
+  if (params.limit) query.set("limit", String(params.limit));
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return request<{ items: JellyfinMediaItem[] }>(`/api/media/jellyfin/items${suffix}`, token);
+}
+
+export function searchJellyfin(token: string, query: string): Promise<{ items: JellyfinMediaItem[] }> {
+  return request<{ items: JellyfinMediaItem[] }>(`/api/media/jellyfin/search?q=${encodeURIComponent(query)}`, token);
+}
+
+export function getMusicRecent(token: string): Promise<{ albums: MusicAlbumItem[] }> {
+  return request<{ albums: MusicAlbumItem[] }>("/api/music/recent", token);
+}
+
+export function getMusicArtists(token: string): Promise<{ artists: MusicArtistItem[] }> {
+  return request<{ artists: MusicArtistItem[] }>("/api/music/artists", token);
+}
+
+export function getMusicAlbums(token: string): Promise<{ albums: MusicAlbumItem[] }> {
+  return request<{ albums: MusicAlbumItem[] }>("/api/music/albums", token);
+}
+
+export function searchMusic(token: string, query: string): Promise<{ albums: MusicAlbumItem[]; artists: MusicArtistItem[] }> {
+  return request<{ albums: MusicAlbumItem[]; artists: MusicArtistItem[] }>(`/api/music/search?q=${encodeURIComponent(query)}`, token);
 }
 
 export function getAdminEvents(token: string): Promise<{ events: EventItem[]; telegram: TelegramStatus }> {

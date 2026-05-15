@@ -200,6 +200,60 @@ class MediaOverviewResponse(BaseModel):
     services: list[MediaOverviewService]
 
 
+class JellyfinLibraryItem(BaseModel):
+    id: str
+    name: str
+    collection_type: str | None = None
+
+
+class JellyfinLibrariesResponse(BaseModel):
+    libraries: list[JellyfinLibraryItem]
+
+
+class JellyfinMediaItem(BaseModel):
+    id: str
+    title: str
+    kind: str
+    year: int | None = None
+    overview: str | None = None
+    date_created: str | None = None
+    runtime_ticks: int | None = None
+    progress_percent: float | None = None
+    poster_url: str | None = None
+
+
+class JellyfinItemsResponse(BaseModel):
+    items: list[JellyfinMediaItem]
+
+
+class MusicAlbumItem(BaseModel):
+    id: str
+    title: str
+    artist: str | None = None
+    year: int | None = None
+    created: str | None = None
+    cover_url: str | None = None
+
+
+class MusicAlbumsResponse(BaseModel):
+    albums: list[MusicAlbumItem]
+
+
+class MusicArtistItem(BaseModel):
+    id: str
+    name: str
+    album_count: int | None = None
+
+
+class MusicArtistsResponse(BaseModel):
+    artists: list[MusicArtistItem]
+
+
+class MusicSearchResponse(BaseModel):
+    albums: list[MusicAlbumItem]
+    artists: list[MusicArtistItem]
+
+
 class EventItem(BaseModel):
     id: str
     level: str

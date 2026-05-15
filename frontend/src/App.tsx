@@ -8,6 +8,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { DownloadsPage } from "./pages/DownloadsPage";
 import { FilesPage } from "./pages/FilesPage";
 import { HomePage } from "./pages/HomePage";
+import { MediaPage } from "./pages/MediaPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import type { Notice, ServiceItem, ServiceTarget, StatusResponse } from "./types";
 import { getErrorMessage } from "./utils";
@@ -117,6 +118,7 @@ export function App() {
             element={<HomePage token={token} services={services} status={status} loading={loading} serviceTarget={serviceTarget} />}
           />
           <Route path="/actions" element={<ActionsPage token={token} onNotice={setNotice} />} />
+          <Route path="/media" element={<MediaPage token={token} services={services} serviceTarget={serviceTarget} onNotice={setNotice} />} />
           <Route path="/downloads" element={<DownloadsPage token={token} onNotice={setNotice} />} />
           <Route path="/files" element={<FilesPage token={token} onNotice={setNotice} />} />
           <Route

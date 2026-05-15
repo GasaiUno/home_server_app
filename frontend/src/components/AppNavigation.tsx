@@ -1,9 +1,10 @@
-import { Activity, Download, Folder, Home, KeyRound, Plus } from "lucide-react";
+import { Activity, Download, Film, Folder, Home, KeyRound, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 const items = [
   { to: "/", label: "Главная", short: "Главная", icon: Home },
+  { to: "/media", label: "Медиа", short: "Медиа", icon: Film },
   { to: "/downloads", label: "Загрузки", short: "Загрузки", icon: Download },
   { to: "/files", label: "Файлы", short: "Файлы", icon: Folder },
   { to: "/admin", label: "Админка", short: "Админка", icon: Activity },

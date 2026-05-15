@@ -20,7 +20,9 @@ from .dashboard_service import get_dashboard_summary
 from .docker_admin import get_admin_service_logs, run_admin_service_action
 from .events import EventStore
 from .file_service import delete_path, list_files, mkdir, recent_youtube_downloads, safe_resolve_path, upload_file
+from .integrations.jellyfin import get_jellyfin_items, get_jellyfin_libraries
 from .integrations.metube import add_youtube_download
+from .integrations.navidrome import get_navidrome_albums, get_navidrome_artists, get_navidrome_recent, search_navidrome
 from .integrations.qbittorrent import QBittorrentClient
 from .media_overview import get_media_overview
 from .models import (
@@ -38,6 +40,11 @@ from .models import (
     FilesListResponse,
     MagnetRequest,
     MediaOverviewResponse,
+    JellyfinItemsResponse,
+    JellyfinLibrariesResponse,
+    MusicAlbumsResponse,
+    MusicArtistsResponse,
+    MusicSearchResponse,
     MkdirRequest,
     ServerMetricsResponse,
     ServicesHealthResponse,
@@ -86,6 +93,13 @@ app.add_middleware(
 )
 
 
+def public_service_url(service_id: str) -> str | None:
+    for service in settings.services:
+        if service.id == service_id:
+            return service.url
+    return None
+
+
 def require_token(
     x_home_token: str | None = Header(default=None, alias="X-Home-Token"),
     current_settings: Settings = Depends(get_settings),
@@ -127,6 +141,100 @@ async def dashboard_summary_endpoint(current_settings: Settings = Depends(requir
 @app.get("/api/media/overview", response_model=MediaOverviewResponse)
 def media_overview_endpoint(_: Settings = Depends(require_token)) -> MediaOverviewResponse:
     return MediaOverviewResponse(**get_media_overview())
+
+
+@app.get("/api/media/jellyfin/libraries", response_model=JellyfinLibrariesResponse)
+async def jellyfin_libraries_endpoint(current_settings: Settings = Depends(require_token)):
+    try:
+        return await get_jellyfin_libraries(current_settings)
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/media/jellyfin/recent", response_model=JellyfinItemsResponse)
+async def jellyfin_recent_endpoint(
+    type: str | None = Query(default=None),  # noqa: A002
+    limit: int = Query(default=24, ge=1, le=50),
+    current_settings: Settings = Depends(require_token),
+):
+    try:
+        return await get_jellyfin_items(current_settings, public_service_url("jellyfin"), item_type=type, limit=limit)
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/media/jellyfin/items", response_model=JellyfinItemsResponse)
+async def jellyfin_items_endpoint(
+    type: str | None = Query(default=None),  # noqa: A002
+    parent_id: str | None = Query(default=None),
+    mode: str | None = Query(default=None),
+    limit: int = Query(default=24, ge=1, le=50),
+    current_settings: Settings = Depends(require_token),
+):
+    try:
+        return await get_jellyfin_items(
+            current_settings,
+            public_service_url("jellyfin"),
+            item_type=type,
+            parent_id=parent_id,
+            mode=mode,
+            limit=limit,
+        )
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/media/jellyfin/search", response_model=JellyfinItemsResponse)
+async def jellyfin_search_endpoint(
+    q: str = Query(..., min_length=1),
+    limit: int = Query(default=24, ge=1, le=50),
+    current_settings: Settings = Depends(require_token),
+):
+    try:
+        return await get_jellyfin_items(current_settings, public_service_url("jellyfin"), search=q, limit=limit)
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/music/recent", response_model=MusicAlbumsResponse)
+async def music_recent_endpoint(
+    limit: int = Query(default=24, ge=1, le=50),
+    current_settings: Settings = Depends(require_token),
+):
+    try:
+        return await get_navidrome_recent(current_settings, public_service_url("navidrome"), limit)
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/music/artists", response_model=MusicArtistsResponse)
+async def music_artists_endpoint(current_settings: Settings = Depends(require_token)):
+    try:
+        return await get_navidrome_artists(current_settings)
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/music/albums", response_model=MusicAlbumsResponse)
+async def music_albums_endpoint(
+    limit: int = Query(default=50, ge=1, le=100),
+    current_settings: Settings = Depends(require_token),
+):
+    try:
+        return await get_navidrome_albums(current_settings, public_service_url("navidrome"), limit)
+    except ApiError as exc:
+        return api_error_response(exc)
+
+
+@app.get("/api/music/search", response_model=MusicSearchResponse)
+async def music_search_endpoint(
+    q: str = Query(..., min_length=1),
+    current_settings: Settings = Depends(require_token),
+):
+    try:
+        return await search_navidrome(current_settings, public_service_url("navidrome"), q)
+    except ApiError as exc:
+        return api_error_response(exc)
 
 
 @app.get("/api/torrents", response_model=TorrentsResponse)

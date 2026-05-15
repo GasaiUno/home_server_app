@@ -112,6 +112,12 @@ class Settings(BaseModel):
     qb_password: str | None
     qb_bypass_auth: bool
     metube_url: str
+    jellyfin_url: str
+    jellyfin_api_key: str | None
+    navidrome_url: str
+    navidrome_username: str | None
+    navidrome_password: str | None
+    navidrome_salt: str
     home_data_root: str
     media_path: str
     music_path: str
@@ -191,6 +197,12 @@ def get_settings() -> Settings:
         qb_password=_get_optional("QB_PASSWORD"),
         qb_bypass_auth=_get_bool("QB_BYPASS_AUTH", True),
         metube_url=getenv("METUBE_URL", "http://metube:8081"),
+        jellyfin_url=getenv("JELLYFIN_URL", "http://jellyfin:8096"),
+        jellyfin_api_key=_get_optional("JELLYFIN_API_KEY"),
+        navidrome_url=getenv("NAVIDROME_URL", "http://navidrome:4533"),
+        navidrome_username=_get_optional("NAVIDROME_USERNAME"),
+        navidrome_password=_get_optional("NAVIDROME_PASSWORD"),
+        navidrome_salt=getenv("NAVIDROME_SALT", "home-server-app"),
         home_data_root=getenv("HOME_DATA_ROOT", "/data"),
         media_path=getenv("MEDIA_PATH", "/data/media"),
         music_path=getenv("MUSIC_PATH", "/data/music"),
