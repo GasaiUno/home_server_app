@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import {
   deleteTorrent,
+  getAdminAudit,
   getFiles,
   getAdminDocker,
   getAdminEvents,
@@ -10,6 +11,7 @@ import {
   getAdminServiceLogs,
   getAdminServicesRegistry,
   getAdminServicesHealth,
+  getAdminTasks,
   getTorrents,
   pauseTorrent,
   resumeTorrent,
@@ -29,6 +31,7 @@ import { TestTelegramAlertButton } from "../components/TestTelegramAlertButton";
 import { TorrentTable } from "../components/TorrentTable";
 import type {
   AdminRegistryService,
+  AuditEventItem,
   DockerContainer,
   EventItem,
   Notice,
@@ -38,12 +41,13 @@ import type {
   ServiceHealthItem,
   ServiceItem,
   StatusResponse,
+  TaskHistoryItem,
   TelegramStatus,
   TorrentItem
 } from "../types";
 import { formatServerTime, formatUptime, getErrorMessage } from "../utils";
 
-type AdminTab = "overview" | "monitoring" | "downloads" | "files" | "services" | "events" | "settings";
+type AdminTab = "overview" | "monitoring" | "downloads" | "files" | "services" | "tasks" | "events" | "settings";
 
 type AdminPageProps = {
   token: string;
@@ -60,6 +64,7 @@ const tabs: { id: AdminTab; label: string }[] = [
   { id: "downloads", label: "Очередь" },
   { id: "files", label: "Хранилище" },
   { id: "services", label: "Сервисы" },
+  { id: "tasks", label: "История" },
   { id: "events", label: "События" },
   { id: "settings", label: "Уведомления" }
 ];
@@ -85,6 +90,8 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
   const [logs, setLogs] = useState<string[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [pendingServiceAction, setPendingServiceAction] = useState<{ service: AdminRegistryService; action: ServiceAction } | null>(null);
+  const [tasks, setTasks] = useState<TaskHistoryItem[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEventItem[]>([]);
 
   const loadMonitoring = useCallback(async () => {
     setMonitoringLoading(true);
@@ -174,6 +181,20 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
     if (activeTab === "files") void loadFiles();
   }, [activeTab, loadFiles]);
 
+  const loadAdminHistory = useCallback(async () => {
+    try {
+      const [tasksPayload, auditPayload] = await Promise.all([getAdminTasks(token), getAdminAudit(token)]);
+      setTasks(tasksPayload.tasks);
+      setAuditEvents(auditPayload.events);
+    } catch (error) {
+      onNotice({ type: "error", message: `Не удалось загрузить историю: ${getErrorMessage(error)}` });
+    }
+  }, [onNotice, token]);
+
+  useEffect(() => {
+    if (activeTab === "tasks") void loadAdminHistory();
+  }, [activeTab, loadAdminHistory]);
+
   async function handleTestAlert() {
     setTestAlertLoading(true);
     try {
@@ -256,12 +277,14 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           className="icon-button"
           type="button"
           onClick={
-            activeTab === "monitoring" || activeTab === "services" || activeTab === "events"
+            activeTab === "monitoring" || activeTab === "services" || activeTab === "events" || activeTab === "tasks"
               ? activeTab === "services"
                 ? () => {
                     void loadMonitoring();
                     void loadRegistry();
                   }
+                : activeTab === "tasks"
+                  ? loadAdminHistory
                 : loadMonitoring
               : activeTab === "downloads"
                 ? loadTorrents
@@ -329,6 +352,29 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
           onViewLogs={(service) => void openServiceLogs(service)}
           onRunAction={(service, action) => setPendingServiceAction({ service, action })}
         />
+      ) : activeTab === "tasks" ? (
+        <section className="history-grid">
+          <HistoryPanel
+            title="Task history"
+            rows={tasks.map((task) => ({
+              id: task.id,
+              title: `${task.action}${task.service ? ` / ${task.service}` : ""}`,
+              meta: task.created_at,
+              status: task.status,
+              message: task.message
+            }))}
+          />
+          <HistoryPanel
+            title="Audit log"
+            rows={auditEvents.map((event) => ({
+              id: `${event.ts}-${event.action}-${event.service ?? "app"}`,
+              title: `${event.action}${event.service ? ` / ${event.service}` : ""}`,
+              meta: event.ts,
+              status: event.result,
+              message: JSON.stringify(event.details)
+            }))}
+          />
+        </section>
       ) : activeTab === "events" ? (
         <EventsTimeline events={events} />
       ) : (
@@ -367,6 +413,34 @@ export function AdminPage({ token, services, status, loading, onRefresh, onNotic
         </div>
       ) : null}
     </>
+  );
+}
+
+function HistoryPanel({
+  title,
+  rows
+}: {
+  title: string;
+  rows: { id: string; title: string; meta: string; status: string; message: string }[];
+}) {
+  return (
+    <section className="panel history-panel">
+      <div className="panel-header">
+        <h2>{title}</h2>
+        <span>{rows.length}</span>
+      </div>
+      <div className="history-list">
+        {rows.length === 0 ? <p className="muted">Записей пока нет</p> : null}
+        {rows.map((row) => (
+          <article key={row.id} className="history-row">
+            <strong>{row.title}</strong>
+            <small>{row.meta}</small>
+            <span>{row.status}</span>
+            <p>{row.message}</p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 

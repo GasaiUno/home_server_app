@@ -3564,6 +3564,37 @@ body {
   font-weight: 900;
 }
 
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.history-row {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.history-row small,
+.history-row p {
+  margin: 0;
+  color: var(--hub-muted);
+}
+
+@media (max-width: 900px) {
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 700px) {
   .registry-actions {
     justify-content: stretch;
