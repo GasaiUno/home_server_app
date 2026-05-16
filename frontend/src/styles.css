@@ -4091,30 +4091,6 @@ body {
 }
 
 .app-navigation {
-  position: static;
-  inset: auto;
-  z-index: auto;
-  display: block;
-  width: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  overflow: visible;
-  font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  transform: none !important;
-}
-
-.app-navigation::before,
-.app-navigation::after {
-  content: none !important;
-}
-
-.nav-dock {
   position: fixed !important;
   top: auto;
   right: auto;
@@ -4138,6 +4114,15 @@ body {
   isolation: isolate;
   overflow: visible;
   transform: translateX(-50%) !important;
+}
+
+.app-navigation::before,
+.app-navigation::after {
+  content: none !important;
+}
+
+.nav-dock {
+  display: contents;
 }
 
 .nav-brand,
@@ -4430,7 +4415,7 @@ body {
     padding-top: 18px;
   }
 
-  .nav-dock {
+  .app-navigation {
     right: auto;
     left: 50%;
     width: calc(100vw - 20px);
