@@ -4093,13 +4093,13 @@ body {
 .app-navigation {
   position: fixed;
   top: auto;
-  right: max(18px, calc((100vw - 980px) / 2));
+  right: auto;
   bottom: var(--dock-bottom);
-  left: max(18px, calc((100vw - 980px) / 2));
+  left: 50%;
   z-index: 80;
   display: flex;
   flex-direction: row;
-  width: auto;
+  width: min(980px, calc(100vw - 36px));
   height: var(--dock-h);
   gap: var(--dock-gap);
   align-items: center;
@@ -4111,6 +4111,9 @@ body {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  isolation: isolate;
+  overflow: visible;
+  transform: translateX(-50%);
 }
 
 .app-navigation::before,
@@ -4301,13 +4304,18 @@ body {
     0 18px 42px rgba(255, 110, 42, 0.2);
   overflow: hidden;
   clip-path: circle(50% at 50% 50%);
-  backdrop-filter: blur(30px) saturate(185%);
-  -webkit-backdrop-filter: blur(30px) saturate(185%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition:
     transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 260ms ease,
     border-color 260ms ease,
     background 260ms ease;
+}
+
+.nav-link-center::before,
+.nav-link-center::after {
+  content: none !important;
 }
 
 .nav-link-center:hover,
@@ -4408,11 +4416,13 @@ body {
   }
 
   .app-navigation {
-    right: 10px;
-    left: 10px;
+    right: auto;
+    left: 50%;
+    width: calc(100vw - 20px);
     height: var(--dock-h);
     gap: var(--dock-gap);
     align-items: center;
+    transform: translateX(-50%);
   }
 
   .nav-items {
