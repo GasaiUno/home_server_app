@@ -4091,29 +4091,15 @@ body {
 }
 
 .app-navigation {
-  position: fixed !important;
-  top: auto;
-  right: auto;
-  bottom: var(--dock-bottom) !important;
-  left: 50% !important;
-  z-index: 80;
-  display: flex;
-  flex-direction: row;
-  width: min(980px, calc(100vw - 36px));
-  height: var(--dock-h);
-  gap: var(--dock-gap);
-  align-items: center;
-  justify-content: center;
+  display: contents;
   padding: 0;
   border: 0;
+  z-index: 80;
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  isolation: isolate;
-  overflow: visible;
-  transform: translateX(-50%) !important;
 }
 
 .app-navigation::before,
@@ -4122,7 +4108,26 @@ body {
 }
 
 .nav-dock {
-  display: contents;
+  position: fixed;
+  right: auto;
+  bottom: var(--dock-bottom);
+  left: 50%;
+  z-index: 80;
+  display: flex;
+  flex-direction: row;
+  width: min(980px, calc(100vw - 36px));
+  height: var(--dock-h);
+  gap: var(--dock-gap);
+  align-items: center;
+  justify-content: center;
+  font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: isolate;
+  overflow: visible;
+  transform: translateX(-50%) !important;
 }
 
 .nav-brand,
@@ -4419,7 +4424,7 @@ body {
     padding-top: 18px;
   }
 
-  .app-navigation {
+  .nav-dock {
     right: auto;
     left: 50%;
     width: calc(100vw - 20px);
@@ -5216,7 +5221,10 @@ tr:last-child td {
 }
 
 .nav-dock {
-  display: contents;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .nav-items,
