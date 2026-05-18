@@ -4574,17 +4574,7 @@ body::before {
 }
 
 .app-layout::after {
-  content: "";
-  position: fixed;
-  right: auto;
-  bottom: 0;
-  left: 50%;
-  z-index: 79;
-  width: min(1120px, calc(100vw - 24px));
-  height: calc(var(--dock-h) + var(--dock-bottom) + 92px);
-  pointer-events: none;
-  background: radial-gradient(72% 76% at 50% 100%, rgba(3, 6, 16, 0.92), rgba(3, 6, 16, 0.58) 46%, rgba(3, 6, 16, 0) 78%);
-  transform: translateX(-50%);
+  content: none;
 }
 
 .app-shell {
@@ -5254,6 +5244,7 @@ tr:last-child td {
   border-radius: inherit;
   clip-path: inset(0 round 999px);
   box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.32),
     inset 0 -14px 30px rgba(255, 255, 255, 0.045);
 }
@@ -5262,6 +5253,7 @@ tr:last-child td {
   border-radius: 50%;
   clip-path: circle(50% at 50% 50%);
   box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.32),
     inset 0 -14px 30px rgba(255, 255, 255, 0.045);
 }
@@ -5307,9 +5299,7 @@ tr:last-child td {
   }
 
   .app-layout::after {
-    height: calc(var(--dock-h) + var(--dock-bottom) + 58px);
-    width: calc(100vw - 12px);
-    background: radial-gradient(94% 78% at 50% 100%, rgba(3, 6, 16, 0.9), rgba(3, 6, 16, 0.52) 50%, rgba(3, 6, 16, 0) 80%);
+    content: none;
   }
 
   .app-shell {
