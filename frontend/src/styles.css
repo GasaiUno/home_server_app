@@ -5246,8 +5246,8 @@ tr:last-child td {
   background:
     linear-gradient(112deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.14) 48%, rgba(255, 196, 117, 0.13)),
     rgba(16, 21, 33, 0.9);
-  -webkit-backdrop-filter: blur(22px) saturate(155%);
-  backdrop-filter: blur(22px) saturate(155%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .nav-items::before {
