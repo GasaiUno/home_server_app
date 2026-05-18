@@ -4150,6 +4150,8 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     inset 0 -12px 28px rgba(255, 255, 255, 0.04);
   overflow: hidden;
+  contain: paint;
+  clip-path: inset(0 round 999px);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -4162,11 +4164,12 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08)),
-    rgba(255, 255, 255, 0.09);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.13)),
+    rgba(255, 255, 255, 0.18);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -9px 22px rgba(255, 255, 255, 0.048);
+    0 10px 28px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -10px 24px rgba(255, 255, 255, 0.07);
   pointer-events: none;
   transition:
     width 420ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -4304,6 +4307,7 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     inset 0 -12px 26px rgba(255, 255, 255, 0.04);
   overflow: hidden;
+  contain: paint;
   clip-path: circle(50% at 50% 50%);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -4572,23 +4576,15 @@ body::before {
 .app-layout::after {
   content: "";
   position: fixed;
-  right: 0;
+  right: auto;
   bottom: 0;
-  left: 0;
-  z-index: 70;
+  left: 50%;
+  z-index: 79;
+  width: min(1120px, calc(100vw - 24px));
   height: calc(var(--dock-h) + var(--dock-bottom) + 92px);
   pointer-events: none;
-  background:
-    radial-gradient(72% 84% at 50% 100%, rgba(3, 6, 16, 0.82), rgba(3, 6, 16, 0.42) 52%, rgba(3, 6, 16, 0) 82%),
-    linear-gradient(180deg, rgba(5, 8, 18, 0), rgba(5, 8, 18, 0.54) 72%, rgba(5, 8, 18, 0.76));
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.42) 30%, #000 68%),
-    linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%);
-  mask-composite: intersect;
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.42) 30%, #000 68%),
-    linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%);
-  -webkit-mask-composite: source-in;
+  background: radial-gradient(72% 76% at 50% 100%, rgba(3, 6, 16, 0.92), rgba(3, 6, 16, 0.58) 46%, rgba(3, 6, 16, 0) 78%);
+  transform: translateX(-50%);
 }
 
 .app-shell {
@@ -5248,8 +5244,8 @@ tr:last-child td {
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(112deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.062) 48%, rgba(255, 196, 117, 0.09)),
-    rgba(255, 255, 255, 0.072);
+    linear-gradient(112deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.14) 48%, rgba(255, 196, 117, 0.13)),
+    rgba(16, 21, 33, 0.9);
   -webkit-backdrop-filter: blur(22px) saturate(155%);
   backdrop-filter: blur(22px) saturate(155%);
 }
@@ -5272,7 +5268,8 @@ tr:last-child td {
 
 .nav-link strong {
   color: #ffffff;
-  font-weight: 520;
+  font-weight: 620;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.34);
 }
 
 .nav-link.active {
@@ -5311,15 +5308,8 @@ tr:last-child td {
 
   .app-layout::after {
     height: calc(var(--dock-h) + var(--dock-bottom) + 58px);
-    background:
-      radial-gradient(92% 84% at 50% 100%, rgba(3, 6, 16, 0.84), rgba(3, 6, 16, 0.46) 54%, rgba(3, 6, 16, 0) 84%),
-      linear-gradient(180deg, rgba(5, 8, 18, 0), rgba(5, 8, 18, 0.5) 70%, rgba(5, 8, 18, 0.74));
-    mask-image:
-      linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.52) 28%, #000 68%),
-      linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%);
-    -webkit-mask-image:
-      linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.52) 28%, #000 68%),
-      linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%);
+    width: calc(100vw - 12px);
+    background: radial-gradient(94% 78% at 50% 100%, rgba(3, 6, 16, 0.9), rgba(3, 6, 16, 0.52) 50%, rgba(3, 6, 16, 0) 80%);
   }
 
   .app-shell {
